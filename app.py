@@ -134,6 +134,25 @@ st.markdown(
     [data-testid="stTabPanel"] p {{
         font-family: "Segoe UI", Arial, sans-serif;
     }}
+    .basis-section {{
+        box-sizing: border-box; margin: 8px 0 4px; padding: 7px 8px;
+        color: white; background: {GREEN}; border-radius: 6px;
+        font: 700 12px "Segoe UI", Arial, sans-serif;
+    }}
+    .basis-label, .basis-unit {{
+        color: {DARK}; font: 400 11px "Segoe UI", Arial, sans-serif;
+    }}
+    .basis-note {{
+        color: {GREY}; font: 400 9px/1.25 "Segoe UI", Arial, sans-serif;
+    }}
+    [data-testid="stForm"] [data-testid="stNumberInput"] input {{
+        box-sizing: border-box; width: 100%; text-align: right !important;
+        font: 700 11px "Segoe UI", Arial, sans-serif;
+        background: #fbfcfc; border: 1px solid #dce7e4; border-radius: 5px;
+    }}
+    [data-testid="stForm"] [data-testid="stNumberInput"] button {{
+        display: none !important;
+    }}
     .app-credit {{
         color: {GREY}; text-align: center; font: 400 9px "Segoe UI", Arial, sans-serif;
         padding-top: 9px;
@@ -305,6 +324,15 @@ def reset_model():
         ("solar_input", 0.0),
     ):
         st.session_state[key] = value
+
+def reset_basis():
+    st.session_state.basis_values = DEFAULTS.copy()
+    st.session_state.capacity_input = int(DEFAULTS["capacity"])
+    st.session_state.urea_input = int(DEFAULTS["urea_share"] * 100)
+    for _, basis_rows in BASIS_GROUPS:
+        for key, _, _, _ in basis_rows:
+            if key not in ("capacity", "urea_share"):
+                st.session_state[f"basis_{key}"] = DEFAULTS[key]
 
 capacity = st.sidebar.number_input(
     "Ammonia capacity (t NH3/yr)",
@@ -818,28 +846,53 @@ with tab_upgrade:
     )
 
 with tab_basis:
-    st.subheader("Basis factors (editable)")
-    st.markdown("**0.88 CH₄ + 1.24 H₂O + 1.26 air → 2 NH₃ + 0.88 CO₂**")
-    st.caption(
-        "Edit the model assumptions below and select Apply basis. Ammonia capacity "
-        "and urea share are controlled in the Model inputs panel."
+    basis_title, basis_reset = st.columns([3, 1], vertical_alignment="center")
+    basis_title.markdown("**Basis factors (editable) - press Enter to apply**")
+    basis_reset.button(
+        "Reset basis to defaults",
+        key="reset_basis_button",
+        on_click=reset_basis,
+        use_container_width=True,
     )
     with st.form("basis_form"):
+        st.markdown("**0.88 CH₄ + 1.24 H₂O + 1.26 air → 2 NH₃ + 0.88 CO₂**")
+        st.caption(
+            "Change an assumption and press Enter or select Apply basis. "
+            "Ammonia capacity and urea share are controlled in Model inputs."
+        )
         edited_basis = st.session_state.basis_values.copy()
         for group_name, basis_rows in BASIS_GROUPS:
-            st.markdown(f"#### {group_name}")
+            st.markdown(
+                f"<div class='basis-section'>{group_name}</div>",
+                unsafe_allow_html=True,
+            )
             for key, label, unit, note in basis_rows:
+                label_col, input_col, unit_col, note_col = st.columns(
+                    [1.55, 0.85, 0.95, 2.1],
+                    vertical_alignment="center",
+                )
+                label_col.markdown(
+                    f"<div class='basis-label'>{label}</div>",
+                    unsafe_allow_html=True,
+                )
                 if key in ("capacity", "urea_share"):
-                    st.write(f"**{label}** ({unit}): set in Model inputs")
-                    st.caption(note)
-                    continue
-                current_value = float(st.session_state.basis_values[key])
-                edited_basis[key] = st.number_input(
-                    f"{label} ({unit})",
-                    value=current_value,
-                    key=f"basis_{key}",
-                    help=note,
-                    format="%.8g",
+                    input_col.markdown("Model inputs")
+                else:
+                    current_value = float(st.session_state.basis_values[key])
+                    edited_basis[key] = input_col.number_input(
+                        label,
+                        value=current_value,
+                        key=f"basis_{key}",
+                        label_visibility="collapsed",
+                        format="%.8g",
+                    )
+                unit_col.markdown(
+                    f"<div class='basis-unit'>{unit}</div>",
+                    unsafe_allow_html=True,
+                )
+                note_col.markdown(
+                    f"<div class='basis-note'>{note}</div>",
+                    unsafe_allow_html=True,
                 )
         apply_basis = st.form_submit_button("Apply basis", type="primary")
     if apply_basis:
