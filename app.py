@@ -34,10 +34,6 @@ st.markdown(
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
         gap: .45rem;
     }}
-    [data-testid="stTab"] {{
-        background: white; border: 1px solid #dce7e4; border-radius: 14px;
-        padding: 1rem 1.1rem; min-height: 74vh;
-    }}
     [data-baseweb="tab-list"] {{
         gap: .25rem; justify-content: center; border-bottom: 0; padding-bottom: .5rem;
     }}
@@ -51,6 +47,9 @@ st.markdown(
     [data-baseweb="tab-panel"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 0 10px 10px 10px;
         padding: .75rem .85rem; min-height: 68vh;
+    }}
+    [data-testid="stTabs"] > div:first-child {{
+        overflow-x: auto; flex-wrap: nowrap;
     }}
     [data-testid="stSidebar"] label p {{
         color: {DARK}; font-weight: 650; font-size: .84rem;
