@@ -2,6 +2,7 @@ from dataclasses import fields
 
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 
 from forge_decarb import Params, Plant
 
@@ -22,15 +23,46 @@ st.markdown(
     f"""
     <style>
     .stApp {{ background-color: #f2f6f5; }}
-    [data-testid="stSidebar"] {{ background-color: #edf3f1; }}
-    [data-baseweb="tab-list"] {{ gap: .35rem; }}
-    [data-baseweb="tab"] {{ color: {DARK}; font-weight: 700; }}
-    [aria-selected="true"][data-baseweb="tab"] {{
-        background: #d9eee9; border-radius: 8px 8px 0 0;
+    [data-testid="stHeader"] {{ background: transparent; }}
+    [data-testid="stMainBlockContainer"] {{
+        max-width: 1600px; padding-top: .7rem; padding-bottom: .5rem;
     }}
-    div[data-testid="stMetric"] {{
-        background: white; border: 1px solid #dce7e4; padding: .7rem;
-        border-radius: .65rem;
+    [data-testid="stSidebar"] {{
+        background: #f2f6f5; min-width: 300px; max-width: 300px;
+    }}
+    [data-testid="stSidebar"] > div:first-child {{ padding-top: .65rem; }}
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
+        gap: .45rem;
+    }}
+    [data-testid="stTab"] {{
+        background: white; border: 1px solid #dce7e4; border-radius: 14px;
+        padding: 1rem 1.1rem; min-height: 74vh;
+    }}
+    [data-baseweb="tab-list"] {{
+        gap: .25rem; justify-content: center; border-bottom: 0; padding-bottom: .5rem;
+    }}
+    [data-baseweb="tab"] {{
+        color: {DARK}; font-weight: 700; border-radius: 8px; height: 2.1rem;
+        padding: 0 .65rem;
+    }}
+    [aria-selected="true"][data-baseweb="tab"] {{
+        background: #d9eee9; color: {DARK};
+    }}
+    [data-baseweb="tab-panel"] {{
+        background: white; border: 1px solid #dce7e4; border-radius: 0 10px 10px 10px;
+        padding: .75rem .85rem; min-height: 68vh;
+    }}
+    [data-testid="stSidebar"] label p {{
+        color: {DARK}; font-weight: 650; font-size: .84rem;
+    }}
+    [data-testid="stCaptionContainer"] p {{
+        color: {GREY}; font-size: .72rem; line-height: 1.3;
+    }}
+    div[data-testid="stDataFrame"] {{
+        border: 1px solid #dce7e4; border-radius: 6px; overflow: hidden;
+    }}
+    div[data-testid="stAlert"] {{
+        border: 0; background: {PALE}; color: {DARK}; border-radius: 9px;
     }}
     </style>
     """,
@@ -142,20 +174,6 @@ FEED_ROWS = [
 ]
 
 
-def add_change_columns(frame, baseline_name, scenario_name):
-    """Add absolute and percentage changes without dividing by zero."""
-    frame["Change"] = frame[scenario_name] - frame[baseline_name]
-    frame["Change (%)"] = frame.apply(
-        lambda row: (
-            100 * row["Change"] / row[baseline_name]
-            if row[baseline_name]
-            else 0.0
-        ),
-        axis=1,
-    )
-    return frame
-
-
 if "basis_values" not in st.session_state:
     st.session_state.basis_values = DEFAULTS.copy()
 for key, value in (
@@ -168,14 +186,8 @@ for key, value in (
     if key not in st.session_state:
         st.session_state[key] = value
 
-st.title("FORGE-2026 | Ammonia & Urea Decarbonization Simulator")
-st.caption(
-    "Dynamic Scope 1-3 emissions, feedstock flows and upgrade costs for an "
-    "ammonia-urea complex."
-)
-
 st.sidebar.header("Model inputs")
-if st.sidebar.button("Reset", use_container_width=True):
+if st.sidebar.button("Reset model", use_container_width=True):
     st.session_state.basis_values = DEFAULTS.copy()
     for group_name, basis_rows in BASIS_GROUPS:
         for key, _, _, _ in basis_rows:
@@ -191,87 +203,86 @@ if st.sidebar.button("Reset", use_container_width=True):
         st.session_state[key] = value
     st.rerun()
 
-with st.sidebar.form("model_inputs"):
-    capacity = st.number_input(
-        "Ammonia capacity (t NH3/yr)",
-        min_value=1,
-        step=10_000,
-        key="capacity_input",
-        help="Annual ammonia output; used as the plant production basis.",
-    )
-    urea_pct = st.number_input(
-        "Urea share of NH3 (%)  (0 = gross CO2)",
-        min_value=0,
-        max_value=100,
-        step=1,
-        key="urea_input",
-        help="Share of ammonia converted to urea. The CO2 in urea is deducted from net process emissions.",
-    )
-    h2_pct = st.slider(
-        "Green hydrogen blending (%)",
-        min_value=0.0,
-        max_value=10.0,
-        step=0.1,
-        key="h2_input",
-        help="Green hydrogen replaces fossil hydrogen made by SMR. The desktop model limits this lever to 10%.",
-    )
-    params_for_controls = Params(
-        **{
-            **st.session_state.basis_values,
-            "capacity": float(capacity),
-            "urea_share": urea_pct / 100,
-        }
-    )
-    plant_for_controls = Plant(params_for_controls)
-    plant_load_kwh_day = plant_for_controls.total_electricity_kwh_day()
-    _, electrolyzer_kwh_day = plant_for_controls.h2_electricity(h2_pct / 100)
-    combined_load_kwh_day = plant_load_kwh_day + electrolyzer_kwh_day
-    solar_max_kwh_day = params_for_controls.daylight_cap * combined_load_kwh_day
-    solar_slider_max = float(max(solar_max_kwh_day, 1))
-    if st.session_state.solar_input > solar_slider_max:
-        st.session_state.solar_input = solar_slider_max
+capacity = st.sidebar.number_input(
+    "Ammonia capacity (t NH3/yr)",
+    min_value=1,
+    step=10_000,
+    key="capacity_input",
+    help="Annual ammonia output; used as the plant production basis.",
+)
+urea_pct = st.sidebar.number_input(
+    "Urea share of NH3 (%)  (0 = gross CO2)",
+    min_value=0,
+    max_value=100,
+    step=1,
+    key="urea_input",
+    help="Share of ammonia converted to urea. The CO2 in urea is deducted from net process emissions.",
+)
+h2_pct = st.sidebar.slider(
+    "Green hydrogen blending (%)",
+    min_value=0.0,
+    max_value=10.0,
+    step=0.1,
+    key="h2_input",
+    help="Green hydrogen replaces fossil hydrogen made by SMR. The desktop model limits this lever to 10%.",
+)
+params_for_controls = Params(
+    **{
+        **st.session_state.basis_values,
+        "capacity": float(capacity),
+        "urea_share": urea_pct / 100,
+    }
+)
+plant_for_controls = Plant(params_for_controls)
+plant_load_kwh_day = plant_for_controls.total_electricity_kwh_day()
+_, electrolyzer_kwh_day = plant_for_controls.h2_electricity(h2_pct / 100)
+combined_load_kwh_day = plant_load_kwh_day + electrolyzer_kwh_day
+solar_max_kwh_day = params_for_controls.daylight_cap * combined_load_kwh_day
+solar_slider_max = float(max(solar_max_kwh_day, 1))
+if st.session_state.solar_input > solar_slider_max:
+    st.session_state.solar_input = solar_slider_max
 
-    st.caption(
-        f"Plant only: {plant_load_kwh_day:,.0f} kWh/day (fixed)\n\n"
-        f"Plant + electrolyzer: {combined_load_kwh_day:,.0f} kWh/day"
-    )
-    h2_t, ro_water = plant_for_controls.h2_water(h2_pct / 100)
-    h2_mwh, h2_kwh_day = plant_for_controls.h2_electricity(h2_pct / 100)
-    st.caption(
-        f"Green H2: {h2_t:,.0f} t/yr  |  RO water: {ro_water:,.0f} m³/yr\n\n"
-        f"Electrolysis electricity: {h2_mwh:,.0f} MWh/yr ({h2_kwh_day:,.0f} kWh/day)"
-    )
-    heat_pct = st.slider(
-        "Heat recovery (combustion) (%)",
-        min_value=0,
-        max_value=90,
-        step=1,
-        key="heat_input",
-        help="Waste-heat recovery reduces the natural gas burned for process heat; modelled as a Scope 1a lever.",
-    )
-    streams_base_for_controls = plant_for_controls.streams()
-    streams_current_for_controls = plant_for_controls.streams(
-        h2_pct / 100, 0, heat_pct / 100
-    )
-    st.caption(
-        f"Combustion CO2: {streams_base_for_controls['combustion']:,.0f} -> "
-        f"{streams_current_for_controls['combustion']:,.0f} t/yr "
-        f"({streams_base_for_controls['combustion'] - streams_current_for_controls['combustion']:,.0f} avoided)"
-    )
-    solar_kwh_day = st.slider(
-        "Solar PV (kWh/day)",
-        min_value=0.0,
-        max_value=solar_slider_max,
-        step=max(solar_slider_max / 100, 1.0),
-        key="solar_input",
-        help="Daily solar generation offsets electricity demand. Solar is daylight-only and capped by the no-battery maximum.",
-    )
-    st.caption(
-        f"Solar available in daylight only (~{params_for_controls.daylight_hours:g} h/day); "
-        f"slider capped at {solar_max_kwh_day:,.0f} kWh/day "
-        "(maximum deliverable plant + electrolyzer load without battery storage)."
-    )
-    run_model = st.form_submit_button("Run model", type="primary", use_container_width=True)
+st.sidebar.caption(
+    f"Plant only: {plant_load_kwh_day:,.0f} kWh/day (fixed)\n\n"
+    f"Plant + electrolyzer: {combined_load_kwh_day:,.0f} kWh/day"
+)
+h2_t, ro_water = plant_for_controls.h2_water(h2_pct / 100)
+h2_mwh, h2_kwh_day = plant_for_controls.h2_electricity(h2_pct / 100)
+st.sidebar.caption(
+    f"Green H2: {h2_t:,.0f} t/yr  |  RO water: {ro_water:,.0f} m³/yr\n\n"
+    f"Electrolysis electricity: {h2_mwh:,.0f} MWh/yr ({h2_kwh_day:,.0f} kWh/day)"
+)
+heat_pct = st.sidebar.slider(
+    "Heat recovery (combustion) (%)",
+    min_value=0,
+    max_value=90,
+    step=1,
+    key="heat_input",
+    help="Waste-heat recovery reduces the natural gas burned for process heat; modelled as a Scope 1a lever.",
+)
+streams_base_for_controls = plant_for_controls.streams()
+streams_current_for_controls = plant_for_controls.streams(
+    h2_pct / 100, 0, heat_pct / 100
+)
+st.sidebar.caption(
+    f"Combustion CO2: {streams_base_for_controls['combustion']:,.0f} -> "
+    f"{streams_current_for_controls['combustion']:,.0f} t/yr "
+    f"({streams_base_for_controls['combustion'] - streams_current_for_controls['combustion']:,.0f} avoided)"
+)
+solar_kwh_day = st.sidebar.slider(
+    "Solar PV (kWh/day)",
+    min_value=0.0,
+    max_value=solar_slider_max,
+    step=max(solar_slider_max / 100, 1.0),
+    key="solar_input",
+    help="Daily solar generation offsets electricity demand. Solar is daylight-only and capped by the no-battery maximum.",
+)
+st.sidebar.caption(
+    f"Solar available in daylight only (~{params_for_controls.daylight_hours:g} h/day); "
+    f"slider capped at {solar_max_kwh_day:,.0f} kWh/day "
+    "(maximum deliverable plant + electrolyzer load without battery storage)."
+)
+st.sidebar.button("Run model", type="primary", use_container_width=True)
 
 params = Params(
     **{
@@ -297,17 +308,6 @@ h2_mwh, h2_kwh_day = plant.h2_electricity(h2)
 electrolyzer_kw = plant.electrolyzer_size_kw(h2)
 electrolyzer_cost = plant.electrolyzer_cost(h2)
 solar_data = plant.solar_sizing(h2, solar)
-
-total = next(row for row in rows if row[0] == "TOTAL")
-metrics = st.columns(4)
-metrics[0].metric("Baseline emissions", f"{total[1]:,.0f} t CO2/yr")
-metrics[1].metric("With selected levers", f"{total[2]:,.0f} t CO2/yr")
-metrics[2].metric(
-    "CO2 avoided",
-    f"{total[3]:,.0f} t/yr",
-    delta=f"{total[4]:+.1f}%",
-)
-metrics[3].metric("Solar generation", f"{solar_kwh_day:,.0f} kWh/day")
 
 tab_feed, tab_table, tab_scope, tab_mac, tab_upgrade, tab_basis = st.tabs(
     [
@@ -347,14 +347,52 @@ with tab_feed:
                 ),
             }
         )
+    feed_frame = pd.DataFrame(feed_rows)
+
+    def style_feed_row(row):
+        label = row["Raw material in / product out"]
+        if label in ("RAW MATERIALS IN", "PRODUCTS OUT"):
+            return ["background-color: #d9eee9; color: #18332f; font-weight: bold"] * len(row)
+        if label.startswith(
+            (
+                "Natural gas - total",
+                "Electricity (plant + electrolyzer)",
+                "Ammonia sold as NH3",
+                "Urea produced",
+            )
+        ):
+            return ["background-color: #e8f4f1; color: #18332f; font-weight: bold"] * len(row)
+        return [""] * len(row)
+
+    feed_style = (
+        feed_frame.style
+        .apply(style_feed_row, axis=1)
+        .format(
+            {
+                "Without": lambda value: f"{value:,.0f}" if isinstance(value, (int, float)) else value,
+                "With": lambda value: f"{value:,.0f}" if isinstance(value, (int, float)) else value,
+            },
+            na_rep="",
+        )
+        .set_table_styles(
+            [
+                {
+                    "selector": "th",
+                    "props": [
+                        ("background-color", GREEN),
+                        ("color", "white"),
+                        ("font-weight", "bold"),
+                        ("text-align", "center"),
+                    ],
+                },
+                {"selector": "td", "props": [("padding", ".35rem .5rem")]},
+            ]
+        )
+    )
     st.dataframe(
-        pd.DataFrame(feed_rows),
+        feed_style,
         hide_index=True,
         use_container_width=True,
-        column_config={
-            "Without": st.column_config.NumberColumn(format="localized"),
-            "With": st.column_config.NumberColumn(format="localized"),
-        },
     )
     st.caption(
         "Natural gas is back-calculated from model CO2 numbers, assuming pure methane "
@@ -426,13 +464,94 @@ with tab_scope:
         ),
         ("Scope 3", "Supply chain", streams_before["scope3"], streams_after["scope3"]),
     ]
-    scope_frame = pd.DataFrame(
-        [
-            {"Scope / source": f"{scope} - {source}", "Before intervention": before, "After intervention": after}
-            for scope, source, before, after in scope_source_data
-        ]
-    ).set_index("Scope / source")
-    st.bar_chart(scope_frame, horizontal=True, use_container_width=True)
+    figure, axis = plt.subplots(figsize=(11, 5), facecolor="white")
+    axis.set_facecolor("white")
+    grouped_sources = [
+        ("Scope 1", [scope_source_data[0], scope_source_data[1]]),
+        ("Scope 2", [scope_source_data[2], scope_source_data[3]]),
+        ("Scope 3", [scope_source_data[4]]),
+    ]
+    x_positions = []
+    source_labels = []
+    scope_ranges = []
+    x = 0.0
+    for scope_name, sources in grouped_sources:
+        scope_start = x
+        for _, source, before, after in sources:
+            x_positions.append(x)
+            source_labels.append(source)
+            x += 1.0
+        scope_ranges.append((scope_name, scope_start, x - 1.0))
+        x += 0.8
+
+    before_values = [item[2] for item in scope_source_data]
+    after_values = [item[3] for item in scope_source_data]
+    bar_width = 0.34
+    before_bars = axis.bar(
+        [position - bar_width / 2 for position in x_positions],
+        before_values,
+        width=bar_width,
+        color="#b8ddd5",
+        edgecolor=DARK,
+        label="Before intervention",
+        zorder=3,
+    )
+    after_bars = axis.bar(
+        [position + bar_width / 2 for position in x_positions],
+        after_values,
+        width=bar_width,
+        color=GREEN,
+        edgecolor=DARK,
+        label="After intervention",
+        zorder=3,
+    )
+    maximum = max(before_values + after_values) or 1
+    for bars in (before_bars, after_bars):
+        for bar in bars:
+            axis.annotate(
+                f"{bar.get_height():,.0f}",
+                (bar.get_x() + bar.get_width() / 2, bar.get_height()),
+                xytext=(0, 4),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                color=DARK,
+            )
+    axis.set_xticks(x_positions, source_labels)
+    axis.tick_params(axis="x", labelsize=9)
+    axis.set_ylim(-maximum * 0.2, maximum * 1.32)
+    axis.set_ylabel("t CO2/yr")
+    axis.grid(axis="y", color="#dce7e4", linewidth=0.8, zorder=0)
+    axis.set_axisbelow(True)
+    for side in ("top", "right", "left"):
+        axis.spines[side].set_visible(False)
+    axis.spines["bottom"].set_color("#dce7e4")
+    for scope_name, left, right in scope_ranges:
+        before_total = sum(item[2] for item in scope_source_data if item[0] == scope_name)
+        after_total = sum(item[3] for item in scope_source_data if item[0] == scope_name)
+        pct = (after_total - before_total) / before_total * 100 if before_total else 0.0
+        center = (left + right) / 2
+        axis.plot([left - .35, left - .35, right + .35, right + .35],
+                  [-maximum * .07, -maximum * .1, -maximum * .1, -maximum * .07],
+                  color=DARK, linewidth=1.5, clip_on=False)
+        axis.text(
+            center,
+            maximum * 1.2,
+            f"{before_total:,.0f} -> {after_total:,.0f}\n"
+            f"t CO2/yr ({pct:+.1f}%)",
+            ha="center",
+            va="top",
+            fontsize=9,
+            fontweight="bold",
+            color=GREEN if pct <= 0 else ORANGE,
+        )
+        axis.text(center, -maximum * .15, scope_name, ha="center", va="top",
+                  fontsize=10, fontweight="bold", color=DARK)
+    axis.legend(frameon=False, loc="upper left", ncol=2)
+    figure.tight_layout()
+    st.pyplot(figure, use_container_width=True)
+    plt.close(figure)
     scope_totals = []
     for scope in ("Scope 1", "Scope 2", "Scope 3"):
         before = sum(item[2] for item in scope_source_data if item[0] == scope)
@@ -461,12 +580,61 @@ with tab_mac:
             for name, avoided, cost in levers
         ]
     )
-    st.bar_chart(
-        mac_frame.set_index("Lever")["Abatement cost (PKR/t CO2)"],
-        horizontal=True,
-        use_container_width=True,
-    )
-    st.dataframe(mac_frame, hide_index=True, use_container_width=True)
+    chart_column, cards_column = st.columns([3, 2], gap="medium")
+    with chart_column:
+        figure, axis = plt.subplots(figsize=(7, 4.6), facecolor="white")
+        axis.set_facecolor("white")
+        ordered = mac_frame.sort_values("Abatement cost (PKR/t CO2)", ascending=False)
+        bars = axis.barh(
+            ordered["Lever"],
+            ordered["Abatement cost (PKR/t CO2)"],
+            color=GREEN,
+            edgecolor="white",
+            height=0.55,
+        )
+        maximum_cost = max(ordered["Abatement cost (PKR/t CO2)"].max(), 1)
+        for bar in bars:
+            axis.text(
+                bar.get_width() + maximum_cost * .02,
+                bar.get_y() + bar.get_height() / 2,
+                f"{bar.get_width():,.0f}",
+                va="center",
+                fontsize=9,
+                fontweight="bold",
+                color=DARK,
+            )
+        axis.set_xlim(0, maximum_cost * 1.3)
+        axis.set_title("Abatement cost (PKR / t CO2 avoided)", fontweight="bold", color=DARK)
+        axis.grid(axis="x", color="#dce7e4", linewidth=0.8)
+        axis.set_axisbelow(True)
+        for side in ("top", "right"):
+            axis.spines[side].set_visible(False)
+        axis.spines["left"].set_visible(False)
+        axis.spines["bottom"].set_color("#dce7e4")
+        figure.tight_layout()
+        st.pyplot(figure, use_container_width=True)
+        plt.close(figure)
+    with cards_column:
+        lever_cards = (
+            ("Solar PV", "Scope 2a"),
+            ("Heat recovery", "Scope 1a"),
+            ("Green H2 blending", "Scope 1a + 1b + 2b"),
+        )
+        for lever_name, scope_name in lever_cards:
+            avoided, cost = next(
+                (amount, price)
+                for name, amount, price in levers
+                if name == lever_name
+            )
+            annual_cost_text = (
+                f"Annual cost: PKR {avoided * cost / 1e6:,.1f} million/yr"
+                if avoided > 0
+                else "Annual cost: - (no CO2 saved)"
+            )
+            with st.container(border=True):
+                st.markdown(f"**{lever_name} avoided ({scope_name})**")
+                st.metric("CO2 avoided", f"{avoided:+,.0f} t CO2/yr")
+                st.caption(annual_cost_text)
     st.caption("*Green H2's listed cost assumes clean electrolyzer power.")
 
 with tab_upgrade:
