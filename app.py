@@ -18,7 +18,7 @@ st.set_page_config(
 GREEN = "#17796f"
 DARK = "#18332f"
 PALE = "#e8f4f1"
-GREY = "#40534f"
+GREY = "#2f4540"
 ORANGE = "#b9582a"
 
 st.markdown(
@@ -66,7 +66,7 @@ st.markdown(
         margin-bottom: .15rem;
     }}
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 10px/1.3 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 11px/1.35 "Segoe UI", Arial, sans-serif;
         margin-bottom: .18rem;
     }}
     [data-testid="stSidebar"] input {{
@@ -143,7 +143,7 @@ st.markdown(
         color: {DARK}; font: 400 11px "Segoe UI", Arial, sans-serif;
     }}
     .basis-note {{
-        color: {GREY}; font: 400 9px/1.25 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 10px/1.3 "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stForm"] [data-testid="stNumberInput"] input {{
         box-sizing: border-box; width: 100%; text-align: right !important;
@@ -158,7 +158,19 @@ st.markdown(
         padding-top: 9px;
     }}
     [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 10px/1.35 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 11px/1.4 "Segoe UI", Arial, sans-serif;
+    }}
+    .mac-card {{
+        box-sizing: border-box; min-height: 100px; margin: 0 0 14px;
+        padding: 12px 14px; background: {PALE};
+        border: 1px solid #dce7e4; border-radius: 12px;
+    }}
+    .mac-card-title {{
+        color: {DARK}; font: 700 12px/1.35 "Segoe UI", Arial, sans-serif;
+    }}
+    .mac-card-value {{
+        margin-top: 7px; color: {GREEN};
+        font: 700 22px/1.2 "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stDataFrame"], [data-testid="stTable"] {{
         font: 400 12px "Segoe UI", Arial, sans-serif;
@@ -719,20 +731,6 @@ with tab_scope:
     figure.tight_layout()
     st.pyplot(figure, use_container_width=True)
     plt.close(figure)
-    scope_totals = []
-    for scope in ("Scope 1", "Scope 2", "Scope 3"):
-        before = sum(item[2] for item in scope_source_data if item[0] == scope)
-        after = sum(item[3] for item in scope_source_data if item[0] == scope)
-        pct = (after - before) / before * 100 if before else 0.0
-        scope_totals.append(
-            {"Scope": scope, "Before (t CO2/yr)": before, "After (t CO2/yr)": after, "Change": f"{pct:+.1f}%"}
-        )
-    st.dataframe(pd.DataFrame(scope_totals), hide_index=True, use_container_width=True)
-    st.caption(
-        f"Selected levers: green H2 {h2 * 100:.1f}%, heat recovery {heat * 100:.0f}%, "
-        f"solar {solar * 100:.1f}% of combined electricity demand."
-    )
-
 with tab_mac:
     st.subheader("Marginal abatement cost (MAC)")
     levers = plant.levers(h2, solar, heat)
@@ -751,7 +749,7 @@ with tab_mac:
     with chart_column:
         figure, axis = plt.subplots(figsize=(7, 4.6), facecolor="white")
         axis.set_facecolor("white")
-        ordered = mac_frame.sort_values("Abatement cost (PKR/t CO2)", ascending=False)
+        ordered = mac_frame.sort_values("Abatement cost (PKR/t CO2)", ascending=True)
         bars = axis.barh(
             ordered["Lever"],
             ordered["Abatement cost (PKR/t CO2)"],
@@ -771,7 +769,14 @@ with tab_mac:
                 color=DARK,
             )
         axis.set_xlim(0, maximum_cost * 1.3)
-        axis.set_title("Abatement cost (PKR / t CO2 avoided)", fontweight="bold", color=DARK)
+        axis.set_title(
+            "Abatement cost (PKR / t CO2 avoided)",
+            fontfamily="Segoe UI",
+            fontsize=11,
+            fontweight="bold",
+            color=DARK,
+        )
+        axis.tick_params(axis="both", colors=DARK, labelsize=9)
         axis.grid(axis="x", color="#dce7e4", linewidth=0.8)
         axis.set_axisbelow(True)
         for side in ("top", "right"):
@@ -798,10 +803,19 @@ with tab_mac:
                 if avoided > 0
                 else "Annual cost: - (no CO2 saved)"
             )
-            with st.container(border=True):
-                st.markdown(f"**{lever_name} avoided ({scope_name})**")
-                st.metric("CO2 avoided", f"{avoided:+,.0f} t CO2/yr")
-                st.caption(annual_cost_text)
+            at_lever_text = (
+                f"at {solar * 100:.0f}% solar" if lever_name == "Solar PV"
+                else f"at {heat * 100:.0f}% heat recovery" if lever_name == "Heat recovery"
+                else f"at {h2 * 100:.1f}% H2"
+            )
+            st.markdown(
+                f"<div class='mac-card'>"
+                f"<div class='mac-card-title'>{lever_name} avoided ({scope_name}) — "
+                f"{at_lever_text}<br>{annual_cost_text}</div>"
+                f"<div class='mac-card-value'>{avoided:,.0f} t CO2/yr</div>"
+                "</div>",
+                unsafe_allow_html=True,
+            )
     st.caption("*Green H2's listed cost assumes clean electrolyzer power.")
 
 with tab_upgrade:
