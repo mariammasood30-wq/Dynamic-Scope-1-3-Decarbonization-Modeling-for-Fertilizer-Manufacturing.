@@ -28,7 +28,8 @@ st.markdown(
         max-width: 1600px; padding-top: .7rem; padding-bottom: .5rem;
     }}
     [data-testid="stSidebar"] {{
-        background: #f2f6f5; min-width: 300px; max-width: 300px;
+        background: #ffffff; min-width: 300px; max-width: 300px;
+        border-right: 1px solid #dce7e4;
     }}
     [data-testid="stSidebar"] > div:first-child {{ padding-top: .65rem; }}
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {{
