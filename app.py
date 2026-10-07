@@ -106,9 +106,15 @@ st.markdown(
         color: {DARK}; background: white; border: 0; border-radius: 7px;
         font: 700 13px "Segoe UI", Arial, sans-serif;
     }}
+    [data-testid="stTab"]:hover:not([aria-selected="true"]) {{
+        color: {DARK} !important; background: {PALE} !important;
+    }}
     [data-testid="stTab"][aria-selected="true"] {{
         color: {DARK} !important; background: #d9eee9 !important;
-        box-shadow: none !important;
+        border-radius: 7px !important; box-shadow: none !important;
+    }}
+    [data-testid="stTab"][aria-selected="true"]:hover {{
+        color: {DARK} !important; background: #d9eee9 !important;
     }}
     [data-testid="stTabs"] [role="tablist"]::after,
     [data-testid="stTabs"] [role="tablist"]::before {{
