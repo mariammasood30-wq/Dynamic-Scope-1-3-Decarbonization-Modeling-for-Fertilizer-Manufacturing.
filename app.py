@@ -41,9 +41,10 @@ st.markdown(
         color: {DARK}; font-weight: 700; border-radius: 8px; height: 2.1rem;
         padding: 0 .65rem;
     }}
-    [aria-selected="true"][data-baseweb="tab"] {{
-        background: #d9eee9; color: {DARK};
+    button[role="tab"][aria-selected="true"] {{
+        background: #d9eee9 !important; color: {DARK} !important;
     }}
+    div[data-baseweb="tab-highlight"] {{ background-color: {GREEN} !important; }}
     [data-baseweb="tab-panel"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 0 10px 10px 10px;
         padding: .75rem .85rem; min-height: 68vh;
