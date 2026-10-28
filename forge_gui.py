@@ -37,6 +37,8 @@ FONT_FAMILY = "Segoe UI"      # modern, clean sans-serif closer to Claude's UI t
 # FONT SIZES (points). Compact hierarchy, with emphasis reserved for key values.
 F_LABEL = 12       # normal labels
 F_NOTE = 10        # secondary notes
+F_INPUT_LABEL = 11 # compact labels in the left input column
+F_INPUT_NOTE = 9   # compact live summaries under the left-panel sliders
 F_TABLE = 12       # results table text
 F_HEAD = 14        # section headings
 F_TITLE = 16       # big headings
@@ -194,76 +196,75 @@ class App(ctk.CTk):
             justify="center",
         ).pack(side="bottom", padx=12, pady=(6, 12))
         ctk.CTkLabel(f, text="Model inputs", font=("Segoe UI", F_TITLE, "bold"),
-                     text_color=DARK).pack(anchor="w", padx=16, pady=(14, 10))
+                 text_color=DARK).pack(anchor="w", padx=14, pady=(10, 5))
 
         # Capacity box. Pressing Enter or clicking away runs update_all().
-        ctk.CTkLabel(f, text="Ammonia capacity (t NH3/yr)", font=("Segoe UI", F_LABEL, "bold")).pack(anchor="w", padx=16)
-        self.cap = ctk.CTkEntry(f, width=240, font=("Segoe UI", F_LABEL), border_width=1,
+        ctk.CTkLabel(f, text="Ammonia capacity (t NH3/yr)", font=("Segoe UI", F_INPUT_LABEL, "bold")).pack(anchor="w", padx=14)
+        self.cap = ctk.CTkEntry(f, width=240, font=("Segoe UI", F_INPUT_LABEL), border_width=1,
                                 border_color=SURFACE_BORDER, fg_color="#fbfcfc")
         self.cap.insert(0, "200000")
-        self.cap.pack(padx=16, pady=(2, 8))
+        self.cap.pack(padx=14, pady=(1, 5))
         self.cap.bind("<Return>", self.update_all)
         self.cap.bind("<FocusOut>", self.update_all)
 
         # Urea share box (typed here as a PERCENT; the Basis tab shows it as a 0-1 fraction)
-        ctk.CTkLabel(f, text="Urea share of NH3 (%)  (0 = gross CO2)", font=("Segoe UI", F_LABEL, "bold")).pack(anchor="w", padx=16)
-        self.urea = ctk.CTkEntry(f, width=240, font=("Segoe UI", F_LABEL), border_width=1,
+        ctk.CTkLabel(f, text="Urea share of NH3 (%)  (0 = gross CO2)", font=("Segoe UI", F_INPUT_LABEL, "bold")).pack(anchor="w", padx=14)
+        self.urea = ctk.CTkEntry(f, width=240, font=("Segoe UI", F_INPUT_LABEL), border_width=1,
                                  border_color=SURFACE_BORDER, fg_color="#fbfcfc")
         self.urea.insert(0, "50")
-        self.urea.pack(padx=16, pady=(2, 8))
+        self.urea.pack(padx=14, pady=(1, 5))
         self.urea.bind("<Return>", self.update_all)
         self.urea.bind("<FocusOut>", self.update_all)
 
         # --- Green hydrogen lever ---
         self.h2, self.h2_lbl = self._slider(f, "Green hydrogen blending", to=10)
-        self.h2o_lbl = ctk.CTkLabel(f, text="Green H2: 0 t/yr  |  RO water: 0 m3/yr",
-                                    font=("Segoe UI", F_NOTE), text_color=GREY, wraplength=250, justify="left")
-        self.h2o_lbl.pack(anchor="w", padx=16, pady=(0, 2))
-        self.h2e_lbl = ctk.CTkLabel(f, text="Electrolysis electricity: 0 MWh/yr",
-                                    font=("Segoe UI", F_NOTE), text_color=GREY, wraplength=250, justify="left")
-        self.h2e_lbl.pack(anchor="w", padx=16, pady=(0, 4))
+        self.h2o_lbl = ctk.CTkLabel(f, text="H2: 0 t/yr | RO: 0 m3/yr",
+                        font=("Segoe UI", F_INPUT_NOTE), text_color=GREY, wraplength=250, justify="left")
+        self.h2o_lbl.pack(anchor="w", padx=14, pady=(0, 1))
+        self.h2e_lbl = ctk.CTkLabel(f, text="Electrolysis: 0 MWh/yr",
+                        font=("Segoe UI", F_INPUT_NOTE), text_color=GREY, wraplength=250, justify="left")
+        self.h2e_lbl.pack(anchor="w", padx=14, pady=(0, 2))
 
         # --- Heat recovery lever (Scope 1a combustion) ---
         self.hr, self.hr_lbl = self._slider(f, "Heat recovery (combustion)", to=90)
-        self.hr_effect_lbl = ctk.CTkLabel(f, text="Combustion CO2: - t/yr",
-                                          font=("Segoe UI", F_NOTE), text_color=GREY, wraplength=250, justify="left")
-        self.hr_effect_lbl.pack(anchor="w", padx=16, pady=(0, 4))
+        self.hr_effect_lbl = ctk.CTkLabel(f, text="Combustion: - t CO2/yr",
+                          font=("Segoe UI", F_INPUT_NOTE), text_color=GREY, wraplength=250, justify="left")
+        self.hr_effect_lbl.pack(anchor="w", padx=14, pady=(0, 2))
 
         # Two lines: plant-only load (fixed) and combined plant + electrolyzer load (grows with H2)
-        self.elec_lbl = ctk.CTkLabel(f, text="Plant only: - kWh/day (fixed)\nPlant + electrolyzer: - kWh/day",
-                                     font=("Segoe UI", F_NOTE + 1, "bold"), text_color=DARK, wraplength=250, justify="left")
-        self.elec_lbl.pack(anchor="w", padx=16, pady=(0, 4))
+        self.elec_lbl = ctk.CTkLabel(f, text="Plant: - | Total: - kWh/day",
+                         font=("Segoe UI", F_INPUT_NOTE, "bold"), text_color=DARK, wraplength=250, justify="left")
+        self.elec_lbl.pack(anchor="w", padx=14, pady=(0, 2))
 
         # --- Solar lever (slider is in kWh/day; its maximum is set inside update_all) ---
         self.solar, self.solar_lbl = self._slider(f, "Solar PV (kWh/day)", to=1000, is_solar=True)
-        ctk.CTkLabel(f, text="Solar available in daylight only (~9 h); slider capped at the max "
-                     "deliverable (plant + electrolyzer) without battery storage.", font=("Segoe UI", F_NOTE),
-                     text_color=GREY, wraplength=250, justify="left").pack(anchor="w", padx=16, pady=(0, 10))
+        ctk.CTkLabel(f, text="Daylight only; capped at max load without battery.", font=("Segoe UI", F_INPUT_NOTE),
+                 text_color=GREY, wraplength=250, justify="left").pack(anchor="w", padx=14, pady=(0, 4))
 
         # Run and Reset side by side (saves vertical space so the bigger fonts still fit)
         btns = ctk.CTkFrame(f, fg_color="transparent")
-        btns.pack(pady=(10, 8))
-        ctk.CTkButton(btns, text="Run model", width=115, font=("Segoe UI", F_LABEL, "bold"), fg_color=GREEN,
+        btns.pack(pady=(5, 4))
+        ctk.CTkButton(btns, text="Run model", width=115, height=30, font=("Segoe UI", F_INPUT_LABEL, "bold"), fg_color=GREEN,
                       hover_color=DARK, corner_radius=8, command=self.update_all).pack(side="left", padx=5)
-        ctk.CTkButton(btns, text="Reset", width=115, font=("Segoe UI", F_LABEL, "bold"), fg_color=BTN_GREY,
+        ctk.CTkButton(btns, text="Reset", width=115, height=30, font=("Segoe UI", F_INPUT_LABEL, "bold"), fg_color=BTN_GREY,
                       hover_color=SURFACE_BORDER, text_color=DARK, corner_radius=8,
                       command=self.reset).pack(side="left", padx=5)
-        ctk.CTkButton(f, text="Results", font=("Segoe UI", F_LABEL, "bold"), fg_color=GREEN,
+        ctk.CTkButton(f, text="Results", height=30, font=("Segoe UI", F_INPUT_LABEL, "bold"), fg_color=GREEN,
                       hover_color=DARK, corner_radius=8, command=self.show_results).pack(
-                          fill="x", padx=20, pady=(2, 4))
-        ctk.CTkButton(f, text="Methodology", font=("Segoe UI", F_LABEL, "bold"), fg_color=BTN_GREY,
+                          fill="x", padx=20, pady=(1, 2))
+        ctk.CTkButton(f, text="Methodology", height=30, font=("Segoe UI", F_INPUT_LABEL, "bold"), fg_color=BTN_GREY,
                       hover_color=SURFACE_BORDER, text_color=DARK, corner_radius=8,
-                      command=self.show_methodology).pack(fill="x", padx=20, pady=(2, 8))
+                      command=self.show_methodology).pack(fill="x", padx=20, pady=(1, 4))
 
     def _slider(self, parent, text, to=100, is_solar=False):
         """Helper: makes a label + slider pair. Every move of the slider calls update_all()."""
-        lbl = ctk.CTkLabel(parent, text=f"{text}: 0", font=("Segoe UI", F_LABEL, "bold"))
+        lbl = ctk.CTkLabel(parent, text=f"{text}: 0", font=("Segoe UI", F_INPUT_LABEL, "bold"))
         lbl.pack(anchor="w", padx=16)
         s = ctk.CTkSlider(parent, from_=0, to=to, number_of_steps=100, width=240,
                           progress_color=GREEN, button_color=GREEN, button_hover_color=DARK,
                           command=lambda _: self.update_all())
         s.set(0)
-        s.pack(padx=16, pady=(2, 8))
+        s.pack(padx=14, pady=(1, 4))
         s.text, s.is_solar = text, is_solar
         return s, lbl
 
@@ -626,8 +627,7 @@ class App(ctk.CTk):
         self.hr_lbl.configure(text=f"Heat recovery (combustion): {heat_recovery * 100:.0f} %")
         self.solar_lbl.configure(text=f"Solar PV: {sol_kwh:,.0f} kWh/day")
         # Plant-only load never changes with H2; the combined load (plant + electrolyzer) does
-        self.elec_lbl.configure(text=f"Plant only: {plant_kwh_day:,.0f} kWh/day (fixed)\n"
-                                     f"Plant + electrolyzer: {combined_kwh_day:,.0f} kWh/day")
+        self.elec_lbl.configure(text=f"Plant: {plant_kwh_day:,.0f} | Total: {combined_kwh_day:,.0f} kWh/day")
 
         h2_mass, ro_water = plant.h2_water(h2)
         h2_elec_mwh, h2_elec_kwh_day = plant.h2_electricity(h2)
@@ -645,15 +645,14 @@ class App(ctk.CTk):
         self._draw_mac(plant, h2, sol, heat_recovery)
         self._draw_upgrade(plant, h2, sol, elec_kw, elec_cost)
         self.rec.configure(text=plant.recommend(h2, sol, heat_recovery))
-        self.h2o_lbl.configure(text=f"Green H2: {h2_mass:,.0f} t/yr  |  RO water: {ro_water:,.0f} m3/yr")
-        self.h2e_lbl.configure(text=f"Electrolysis electricity: {h2_elec_mwh:,.0f} MWh/yr "
-                                    f"({h2_elec_kwh_day:,.0f} kWh/day)")
+        self.h2o_lbl.configure(text=f"H2: {h2_mass:,.0f} t/yr | RO: {ro_water:,.0f} m3/yr")
+        self.h2e_lbl.configure(text=f"Electrolysis: {h2_elec_mwh:,.0f} MWh/yr")
 
         combustion_before = plant.streams()["combustion"]
         combustion_after = plant.streams(h2, sol, heat_recovery)["combustion"]
         self.hr_effect_lbl.configure(
-            text=f"Combustion CO2: {combustion_before:,.0f} -> {combustion_after:,.0f} t/yr "
-                 f"({combustion_before - combustion_after:,.0f} avoided)")
+              text=f"Combustion: {combustion_before:,.0f} -> {combustion_after:,.0f} t/yr "
+                  f"({combustion_before - combustion_after:,.0f} saved)")
 
     # ---------- Feedstock tab ----------
     def _feed_tab(self):

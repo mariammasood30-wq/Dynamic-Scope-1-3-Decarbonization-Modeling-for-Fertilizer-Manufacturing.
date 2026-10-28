@@ -44,34 +44,35 @@ st.markdown(
         border: 0;
     }}
     [data-testid="stSidebar"] > div:first-child {{
-        padding: 35px 8px 12px;
+        padding: 12px 8px 8px;
     }}
     [data-testid="stSidebarHeader"] {{
         display: none !important;
     }}
     [data-testid="stSidebarUserContent"] {{
-        box-sizing: border-box; position: relative; top: 16px; left: 10px;
-        width: calc(100% + 4px); min-height: calc(100vh - 73px);
-        padding: 12px 12px 10px; background: white;
-        border: 1px solid #dce7e4; border-radius: 14px;
+        box-sizing: border-box; position: relative; top: 0; left: 0;
+        width: 100%; min-height: calc(100vh - 32px);
+        padding: 8px 10px 8px; background: white;
+        border: 1px solid #dce7e4; border-radius: 12px;
     }}
     [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] {{
-        gap: .32rem;
+        gap: .16rem;
     }}
     [data-testid="stSidebar"] h2 {{
-        color: {DARK}; font: 700 16px "Segoe UI", Arial, sans-serif;
-        margin: 0 0 7px;
+        color: {DARK}; font: 700 15px "Segoe UI", Arial, sans-serif;
+        margin: 0 0 4px;
     }}
     [data-testid="stSidebar"] label p {{
-        color: {DARK}; font: 700 12px "Segoe UI", Arial, sans-serif;
-        margin-bottom: .15rem;
+        color: {DARK}; font: 700 11px "Segoe UI", Arial, sans-serif;
+        margin-bottom: .05rem;
     }}
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 11px/1.35 "Segoe UI", Arial, sans-serif;
-        margin-bottom: .18rem;
+        color: {GREY}; font: 400 10px/1.2 "Segoe UI", Arial, sans-serif;
+        margin-bottom: .06rem;
     }}
     [data-testid="stSidebar"] input {{
-        font: 400 12px "Segoe UI", Arial, sans-serif;
+        height: 31px; min-height: 31px;
+        font: 400 11px "Segoe UI", Arial, sans-serif;
         border: 1px solid #dce7e4; border-radius: 5px;
     }}
     [data-testid="stNumberInput"] button {{
@@ -82,7 +83,7 @@ st.markdown(
         display: none !important;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] {{
-        margin-bottom: -.2rem;
+        margin-bottom: -.4rem; padding-top: 0; padding-bottom: 0;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] [role="slider"] {{
         background-color: {GREEN}; border-color: {GREEN};
@@ -91,8 +92,9 @@ st.markdown(
         background-color: {GREEN};
     }}
     [data-testid="stSidebar"] button {{
-        font: 700 12px "Segoe UI", Arial, sans-serif;
-        border-radius: 8px;
+        min-height: 31px; padding-top: .2rem; padding-bottom: .2rem;
+        font: 700 11px "Segoe UI", Arial, sans-serif;
+        border-radius: 7px;
     }}
     [data-testid="stTabs"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 14px;
@@ -161,8 +163,8 @@ st.markdown(
         display: none !important;
     }}
     .app-credit {{
-        color: {GREY}; text-align: center; font: 400 9px "Segoe UI", Arial, sans-serif;
-        padding-top: 9px;
+        color: {GREY}; text-align: center; font: 400 8px "Segoe UI", Arial, sans-serif;
+        padding-top: 4px;
     }}
     [data-testid="stCaptionContainer"] p {{
         color: {GREY}; font: 400 11px/1.4 "Segoe UI", Arial, sans-serif;
@@ -399,8 +401,7 @@ if st.session_state.solar_input > solar_slider_max:
 h2_t, ro_water = plant_for_controls.h2_water(h2_pct / 100)
 h2_mwh, h2_kwh_day = plant_for_controls.h2_electricity(h2_pct / 100)
 st.sidebar.caption(
-    f"Green H2: {h2_t:,.0f} t/yr  |  RO water: {ro_water:,.0f} m³/yr\n\n"
-    f"Electrolysis electricity: {h2_mwh:,.0f} MWh/yr ({h2_kwh_day:,.0f} kWh/day)"
+    f"H2 {h2_t:,.0f} t/yr | RO {ro_water:,.0f} m³/yr | Power {h2_mwh:,.0f} MWh/yr"
 )
 heat_current = int(st.session_state.heat_input)
 heat_pct = st.sidebar.slider(
@@ -416,13 +417,12 @@ streams_current_for_controls = plant_for_controls.streams(
     h2_pct / 100, 0, heat_pct / 100
 )
 st.sidebar.caption(
-    f"Combustion CO2: {streams_base_for_controls['combustion']:,.0f} -> "
+    f"Combustion: {streams_base_for_controls['combustion']:,.0f} → "
     f"{streams_current_for_controls['combustion']:,.0f} t/yr "
-    f"({streams_base_for_controls['combustion'] - streams_current_for_controls['combustion']:,.0f} avoided)"
+    f"({streams_base_for_controls['combustion'] - streams_current_for_controls['combustion']:,.0f} saved)"
 )
-st.sidebar.markdown(
-    f"**Plant only:** {plant_load_kwh_day:,.0f} kWh/day (fixed)  \n"
-    f"**Plant + electrolyzer:** {combined_load_kwh_day:,.0f} kWh/day"
+st.sidebar.caption(
+    f"Power: plant {plant_load_kwh_day:,.0f} | total {combined_load_kwh_day:,.0f} kWh/day"
 )
 solar_current = float(st.session_state.solar_input)
 solar_kwh_day = st.sidebar.slider(
@@ -434,8 +434,7 @@ solar_kwh_day = st.sidebar.slider(
     help="Daily solar generation offsets electricity demand. Solar is daylight-only and capped by the no-battery maximum.",
 )
 st.sidebar.caption(
-    f"Solar available in daylight only (~{params_for_controls.daylight_hours:g} h); "
-    "slider capped at the max deliverable (plant + electrolyzer) without battery storage."
+    f"Daylight-only (~{params_for_controls.daylight_hours:g} h); capped at max load without battery."
 )
 run_col, reset_col = st.sidebar.columns(2, gap="small")
 run_col.button("Run model", type="primary", use_container_width=True)
