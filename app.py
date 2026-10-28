@@ -5,6 +5,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 from forge_decarb import Params, Plant
+from forge_reports import build_results_exports, methodology_sections
 
 plt.rcParams["font.sans-serif"] = ["Segoe UI", "Arial", "DejaVu Sans"]
 plt.rcParams["font.family"] = "sans-serif"
@@ -325,11 +326,14 @@ for key, value in (
 ):
     if key not in st.session_state:
         st.session_state[key] = value
+if "active_sidebar_panel" not in st.session_state:
+    st.session_state.active_sidebar_panel = None
 
 st.sidebar.header("Model inputs")
 
 def reset_model():
     st.session_state.basis_values = DEFAULTS.copy()
+    st.session_state.active_sidebar_panel = None
     for _, basis_rows in BASIS_GROUPS:
         for key, _, _, _ in basis_rows:
             if key not in ("capacity", "urea_share"):
@@ -436,6 +440,10 @@ st.sidebar.caption(
 run_col, reset_col = st.sidebar.columns(2, gap="small")
 run_col.button("Run model", type="primary", use_container_width=True)
 reset_col.button("Reset", on_click=reset_model, use_container_width=True)
+if st.sidebar.button("Results", key="results_button", width="stretch"):
+    st.session_state.active_sidebar_panel = "results"
+if st.sidebar.button("Methodology", key="methodology_button", width="stretch"):
+    st.session_state.active_sidebar_panel = "methodology"
 st.sidebar.markdown(
     "<div class='app-credit'>Created by Mariam Masood · mariam.masood30@gmail.com</div>",
     unsafe_allow_html=True,
@@ -465,6 +473,36 @@ h2_mwh, h2_kwh_day = plant.h2_electricity(h2)
 electrolyzer_kw = plant.electrolyzer_size_kw(h2)
 electrolyzer_cost = plant.electrolyzer_cost(h2)
 solar_data = plant.solar_sizing(h2, solar)
+
+if st.session_state.active_sidebar_panel == "results":
+    st.subheader("Results export")
+    pdf_data, jpg_data = build_results_exports(plant, h2, solar, heat)
+    pdf_col, jpg_col = st.columns(2, gap="small")
+    pdf_col.download_button(
+        "Download PDF",
+        data=pdf_data,
+        file_name="FORGE_results.pdf",
+        mime="application/pdf",
+        width="stretch",
+    )
+    jpg_col.download_button(
+        "Download JPG",
+        data=jpg_data,
+        file_name="FORGE_results.jpg",
+        mime="image/jpeg",
+        width="stretch",
+    )
+    st.image(jpg_data, caption="Current model results", width="stretch")
+elif st.session_state.active_sidebar_panel == "methodology":
+    st.subheader("How the calculations are made")
+    for section_title, items in methodology_sections():
+        st.markdown(
+            f"<div class='basis-section'>{section_title}</div>",
+            unsafe_allow_html=True,
+        )
+        for formula_title, explanation in items:
+            st.markdown(f"**{formula_title}**  \n{explanation}")
+    st.divider()
 
 tab_feed, tab_table, tab_scope, tab_mac, tab_upgrade, tab_basis = st.tabs(
     [

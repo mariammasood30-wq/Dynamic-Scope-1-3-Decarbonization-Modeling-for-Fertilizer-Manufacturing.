@@ -7,6 +7,8 @@ UI settings are defined in the constants below. Basis fields are listed in
 ``BASIS_GROUPS``; calculations and model defaults live in ``forge_decarb.py``.
 """
 from dataclasses import fields              # lets us loop over every field in Params automatically
+from pathlib import Path
+from tkinter import filedialog, messagebox
 import customtkinter as ctk                 # modern-looking widgets (buttons, sliders, tabs...)
 import matplotlib                           # charting library
 matplotlib.use("TkAgg")                     # tell matplotlib to draw inside a Tk window
@@ -15,6 +17,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter, MaxNLocator   # puts commas in axis numbers (10,000 not 10000)
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from forge_decarb import Plant, Params      # the calculation engine (forge_decarb.py)
+from forge_reports import build_results_exports, methodology_sections
 
 # ---------------------------------------------------------------------------
 # CONSTANTS: colours, window size, picture location. Safe to edit.
@@ -245,6 +248,12 @@ class App(ctk.CTk):
         ctk.CTkButton(btns, text="Reset", width=115, font=("Segoe UI", F_LABEL, "bold"), fg_color=BTN_GREY,
                       hover_color=SURFACE_BORDER, text_color=DARK, corner_radius=8,
                       command=self.reset).pack(side="left", padx=5)
+        ctk.CTkButton(f, text="Results", font=("Segoe UI", F_LABEL, "bold"), fg_color=GREEN,
+                      hover_color=DARK, corner_radius=8, command=self.show_results).pack(
+                          fill="x", padx=20, pady=(2, 4))
+        ctk.CTkButton(f, text="Methodology", font=("Segoe UI", F_LABEL, "bold"), fg_color=BTN_GREY,
+                      hover_color=SURFACE_BORDER, text_color=DARK, corner_radius=8,
+                      command=self.show_methodology).pack(fill="x", padx=20, pady=(2, 8))
 
     def _slider(self, parent, text, to=100, is_solar=False):
         """Helper: makes a label + slider pair. Every move of the slider calls update_all()."""
@@ -269,6 +278,45 @@ class App(ctk.CTk):
         self.urea.delete(0, "end")
         self.urea.insert(0, fmt_num(DEFAULTS["urea_share"] * 100))
         self.update_all()
+
+    def show_results(self):
+        folder = filedialog.askdirectory(parent=self, title="Choose where to save the results")
+        if not folder:
+            return
+        pdf_data, jpg_data = build_results_exports(
+            self.current_plant, self.current_h2, self.current_solar, self.current_heat_recovery
+        )
+        pdf_path = Path(folder) / "FORGE_results.pdf"
+        jpg_path = Path(folder) / "FORGE_results.jpg"
+        pdf_path.write_bytes(pdf_data)
+        jpg_path.write_bytes(jpg_data)
+        messagebox.showinfo(
+            "Results exported",
+            f"Saved both result formats to:\n{pdf_path.parent}",
+            parent=self,
+        )
+
+    def show_methodology(self):
+        window = ctk.CTkToplevel(self)
+        window.title("FORGE-2026 | Methodology")
+        window.geometry("900x720")
+        window.transient(self)
+        ctk.CTkLabel(window, text="How the calculations are made", font=("Segoe UI", F_TITLE, "bold"),
+                     text_color=DARK).pack(anchor="w", padx=18, pady=(16, 8))
+        body = ctk.CTkScrollableFrame(window, fg_color="transparent")
+        body.pack(fill="both", expand=True, padx=12, pady=(0, 4))
+        for section_title, items in methodology_sections():
+            ctk.CTkLabel(body, text=section_title, font=("Segoe UI", F_LABEL, "bold"),
+                         text_color="white", fg_color=GREEN, corner_radius=6,
+                         anchor="w").pack(fill="x", padx=8, pady=(12, 5), ipady=7, ipadx=6)
+            for formula_title, explanation in items:
+                ctk.CTkLabel(body, text=formula_title, font=("Segoe UI", F_LABEL, "bold"),
+                             text_color=DARK, anchor="w").pack(fill="x", padx=14, pady=(7, 1))
+                ctk.CTkLabel(body, text=explanation, font=("Segoe UI", F_LABEL), text_color=GREY,
+                             justify="left", anchor="w", wraplength=820).pack(fill="x", padx=14, pady=(0, 3))
+        ctk.CTkButton(window, text="Close", width=120, fg_color=BTN_GREY,
+                      hover_color=SURFACE_BORDER, text_color=DARK, corner_radius=8,
+                      command=window.destroy).pack(anchor="e", padx=18, pady=(4, 14))
 
     # ---------- right panel: outputs ----------
     def _outputs(self):
@@ -553,6 +601,9 @@ class App(ctk.CTk):
 
         h2 = self.h2.get() / 100                      # slider 0-10 -> fraction 0-0.10
         heat_recovery = self.hr.get() / 100            # slider 0-90 -> fraction 0-0.90
+        self.current_plant = plant
+        self.current_h2 = h2
+        self.current_heat_recovery = heat_recovery
 
         # 4) Solar slider's achievable range depends on the COMBINED load (plant + electrolyzer)
         plant_kwh_day = plant.total_electricity_kwh_day()
@@ -568,6 +619,7 @@ class App(ctk.CTk):
 
         sol_kwh = self.solar.get()                                  # slider is kWh/day directly
         sol = sol_kwh / combined_kwh_day if combined_kwh_day else 0.0   # convert to a 0-1 share
+        self.current_solar = sol
 
         # 5) Update the labels on the left panel
         self.h2_lbl.configure(text=f"Green hydrogen blending: {h2 * 100:.1f} %")
