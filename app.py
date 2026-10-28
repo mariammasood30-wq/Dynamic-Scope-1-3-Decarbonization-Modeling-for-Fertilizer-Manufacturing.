@@ -34,7 +34,7 @@ st.markdown(
         display: none !important;
     }}
     [data-testid="stMainBlockContainer"] {{
-        max-width: none; padding: 35px 9px 10px;
+        max-width: none; padding: 0 9px 10px;
     }}
     section[data-testid="stMain"] {{
         flex: 0 1 951px; width: 951px; max-width: 951px;
@@ -56,7 +56,7 @@ st.markdown(
         border: 1px solid #dce7e4; border-radius: 12px;
     }}
     [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] {{
-        gap: .16rem;
+        gap: .22rem;
     }}
     [data-testid="stSidebar"] h2 {{
         color: {DARK}; font: 700 15px "Segoe UI", Arial, sans-serif;
@@ -67,8 +67,8 @@ st.markdown(
         margin-bottom: .05rem;
     }}
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 10px/1.2 "Segoe UI", Arial, sans-serif;
-        margin-bottom: .06rem;
+        color: {GREY}; font: 400 9px/1.3 "Segoe UI", Arial, sans-serif;
+        margin-bottom: 0; padding-bottom: 3px;
     }}
     [data-testid="stSidebar"] input {{
         height: 31px; min-height: 31px;
@@ -83,7 +83,7 @@ st.markdown(
         display: none !important;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] {{
-        margin-bottom: -.4rem; padding-top: 0; padding-bottom: 0;
+        margin-bottom: 0; padding-top: 0; padding-bottom: 0;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] [role="slider"] {{
         background-color: {GREEN}; border-color: {GREEN};
@@ -98,10 +98,12 @@ st.markdown(
     }}
     [data-testid="stTabs"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 14px;
-        padding: 10px; min-height: calc(100vh - 73px);
+        box-sizing: border-box; display: flex; flex-direction: column;
+        margin-top: -3px; padding: 10px; height: calc(100vh - 26px);
+        min-height: 0; overflow: hidden;
     }}
     [data-testid="stTabs"] [role="tablist"] {{
-        gap: 2px; justify-content: center; border-bottom: 0;
+        flex: 0 0 auto; gap: 2px; justify-content: center; border-bottom: 0;
         padding: 0 0 8px; min-height: 38px;
     }}
     [data-testid="stTab"] {{
@@ -131,6 +133,7 @@ st.markdown(
         margin: 0;
     }}
     [data-testid="stTabPanel"] {{
+        box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
         background: #fff; border: 0; border-radius: 8px; padding: 8px 6px;
     }}
     [data-testid="stTabPanel"] h3 {{
@@ -199,12 +202,11 @@ st.markdown(
     }}
     @media (max-width: 900px) {{
         [data-testid="stSidebar"] {{ min-width: 260px; max-width: 260px; }}
-        [data-testid="stMainBlockContainer"] {{ padding: 12px 8px 8px; }}
+        [data-testid="stMainBlockContainer"] {{ padding: 0 8px 8px; }}
         [data-testid="stSidebar"] > div:first-child {{ padding-top: 12px; }}
         [data-testid="stSidebarUserContent"] {{
             top: 0; left: 0; width: 100%; min-height: calc(100vh - 24px);
         }}
-        [data-testid="stTabs"] {{ min-height: calc(100vh - 36px); }}
         [data-testid="stTab"] {{ padding: 0 5px; font-size: 11px; }}
     }}
     </style>
@@ -417,12 +419,8 @@ streams_current_for_controls = plant_for_controls.streams(
     h2_pct / 100, 0, heat_pct / 100
 )
 st.sidebar.caption(
-    f"Combustion: {streams_base_for_controls['combustion']:,.0f} → "
-    f"{streams_current_for_controls['combustion']:,.0f} t/yr "
-    f"({streams_base_for_controls['combustion'] - streams_current_for_controls['combustion']:,.0f} saved)"
-)
-st.sidebar.caption(
-    f"Power: plant {plant_load_kwh_day:,.0f} | total {combined_load_kwh_day:,.0f} kWh/day"
+    f"Combustion CO2: {streams_base_for_controls['combustion']:,.0f} → "
+    f"{streams_current_for_controls['combustion']:,.0f} t/yr"
 )
 solar_current = float(st.session_state.solar_input)
 solar_kwh_day = st.sidebar.slider(
@@ -434,7 +432,7 @@ solar_kwh_day = st.sidebar.slider(
     help="Daily solar generation offsets electricity demand. Solar is daylight-only and capped by the no-battery maximum.",
 )
 st.sidebar.caption(
-    f"Daylight-only (~{params_for_controls.daylight_hours:g} h); capped at max load without battery."
+    f"Daylight only (~{params_for_controls.daylight_hours:g} h); no battery storage."
 )
 run_col, reset_col = st.sidebar.columns(2, gap="small")
 run_col.button("Run model", type="primary", use_container_width=True)
