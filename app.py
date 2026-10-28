@@ -68,7 +68,7 @@ st.markdown(
     }}
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {GREY}; font: 400 9px/1.3 "Segoe UI", Arial, sans-serif;
-        margin-bottom: 0; padding-bottom: 3px;
+        margin-bottom: 0; padding-bottom: 5px;
     }}
     [data-testid="stSidebar"] input {{
         height: 31px; min-height: 31px;
@@ -83,7 +83,7 @@ st.markdown(
         display: none !important;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] {{
-        margin-bottom: 0; padding-top: 0; padding-bottom: 0;
+        margin-top: .1rem; margin-bottom: 0; padding-top: 0; padding-bottom: 0;
     }}
     [data-testid="stSidebar"] [data-testid="stSlider"] [role="slider"] {{
         background-color: {GREEN}; border-color: {GREEN};
@@ -430,9 +430,6 @@ solar_kwh_day = st.sidebar.slider(
     step=max(solar_slider_max / 100, 1.0),
     key="solar_input",
     help="Daily solar generation offsets electricity demand. Solar is daylight-only and capped by the no-battery maximum.",
-)
-st.sidebar.caption(
-    f"Daylight only (~{params_for_controls.daylight_hours:g} h); no battery storage."
 )
 run_col, reset_col = st.sidebar.columns(2, gap="small")
 run_col.button("Run model", type="primary", use_container_width=True)
