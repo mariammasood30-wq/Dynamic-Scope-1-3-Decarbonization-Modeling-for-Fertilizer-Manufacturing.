@@ -6,15 +6,20 @@ import matplotlib.pyplot as plt
 
 from forge_decarb import Params, Plant
 from forge_reports import build_results_exports, methodology_sections
+from splash import show_splash
 
 plt.rcParams["font.sans-serif"] = ["Segoe UI", "Arial", "DejaVu Sans"]
 plt.rcParams["font.family"] = "sans-serif"
 
 st.set_page_config(
-    page_title="FORGE-2026 | Ammonia & Urea Decarbonization Simulator",
-    page_icon="🌱",
+    page_title="DecarbNH3",
+    page_icon="⚗️",
     layout="wide",
 )
+
+if not st.session_state.get("splash_done"):
+    show_splash()
+    st.stop()
 
 GREEN = "#17796f"
 DARK = "#18332f"
