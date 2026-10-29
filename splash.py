@@ -4,6 +4,7 @@ import streamlit as st
 
 
 _DISPLAY_SECONDS = 15
+_BRAND_SCREEN_SECONDS = 3
 _LOADING_MESSAGES = (
     "Loading feedstock data...",
     "Initializing Scope 1-3 engine...",
@@ -69,6 +70,15 @@ def show_splash():
             margin-top: 0.4rem;
             color: #435f5d;
             font-size: 0.82rem;
+        }
+        .st-key-splash-brand-card {
+            width: min(720px, 90vw);
+            padding: clamp(2.5rem, 8vw, 6rem) 2rem;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+        .st-key-splash-brand-card .splash-credit {
+            margin-top: 1.5rem;
+            font-size: clamp(0.82rem, 1.5vw, 1rem);
         }
         .splash-divider {
             width: 92%;
@@ -177,33 +187,42 @@ def show_splash():
             st.session_state.splash_done = True
             st.rerun(scope="app")
 
-        message_index = min(int(elapsed // 5), len(_LOADING_MESSAGES) - 1)
-        progress = min(elapsed / _DISPLAY_SECONDS, 1.0)
+        if elapsed < _BRAND_SCREEN_SECONDS:
+            with st.container(key="splash-brand-card", border=False):
+                st.markdown(
+                    """
+                    <h1 class="splash-brand">DecarbNH3</h1>
+                    <div class="splash-credit">programmed by Mariam Masood, mariam.masood30@gmail.com</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            return
 
-        with st.container(key="splash-card"):
+        intro_elapsed = elapsed - _BRAND_SCREEN_SECONDS
+        message_index = min(int(intro_elapsed // 4), len(_LOADING_MESSAGES) - 1)
+        progress = min(intro_elapsed / (_DISPLAY_SECONDS - _BRAND_SCREEN_SECONDS), 1.0)
+
+        with st.container(key="splash-card", border=False):
             st.markdown(
                 """
-                <h1 class="splash-brand">DecarbNH3</h1>
-                <div class="splash-tagline">Ammonia &amp; Urea Decarbonization Modeller</div>
-                <div class="splash-meta">v1.0</div>
-                <div class="splash-credit">programmed by Mariam Masood, mariam.masood30@gmail.com</div>
+                <h1 class="splash-brand">What this app does</h1>
                 <div class="splash-divider"></div>
                 <div class="splash-section">
-                    <h3>What this app does</h3>
                     <ul class="splash-feature-list">
                         <li>Models Scope 1, 2 and 3 emissions of an ammonia-urea plant.</li>
-                        <li>Tests three decarbonization levers: green hydrogen blending, heat recovery, and solar PV.</li>
-                        <li>Shows results as a Scope 1-3 table, Scope diagram, MAC curve, and upgrading cost estimate.</li>
-                        <li>Intended for engineers, students and researchers.</li>
+                        <li>Tests green hydrogen blending, heat recovery, and solar PV.</li>
+                        <li>Shows emissions in a Scope 1-3 table and diagram, plus a MAC curve and upgrading cost estimate.</li>
+                        <li>Designed for engineers, students and researchers.</li>
                     </ul>
                 </div>
+                <div class="splash-divider"></div>
                 <div class="splash-section">
                     <h3>How to use</h3>
                     <div class="splash-steps">
                         <div class="splash-step"><div class="splash-step-number">1</div><p>Enter ammonia capacity (t NH3/yr) and urea share (%) in the left panel.</p></div>
-                        <div class="splash-step"><div class="splash-step-number">2</div><p>Set the levers: green hydrogen blending, heat recovery, and solar PV.</p></div>
+                        <div class="splash-step"><div class="splash-step-number">2</div><p>Set green hydrogen blending, heat recovery, and solar PV.</p></div>
                         <div class="splash-step"><div class="splash-step-number">3</div><p>Click "Run model".</p></div>
-                        <div class="splash-step"><div class="splash-step-number">4</div><p>Explore the tabs: Feedstock, Scope 1-3 table, Scope diagram, MAC curve, Upgrading cost, Basis &amp; equations. Use Results and Methodology in the left panel for a summary and assumptions.</p></div>
+                        <div class="splash-step"><div class="splash-step-number">4</div><p>Explore Feedstock, Scope 1-3 table, Scope diagram, MAC curve, Upgrading cost, and Basis &amp; equations. Results and Methodology in the left panel provide summaries and assumptions.</p></div>
                     </div>
                 </div>
                 """,
@@ -220,9 +239,9 @@ def show_splash():
             )
             skip_col, enter_col = st.columns(2)
             with skip_col:
-                skip = st.button("Skip intro", key="skip_intro_button", use_container_width=True)
+                skip = st.button("Skip intro", key="skip_intro_button", width="stretch")
             with enter_col:
-                enter = st.button("Enter app", key="enter_app_button", type="primary", use_container_width=True)
+                enter = st.button("Enter app", key="enter_app_button", type="primary", width="stretch")
 
         if skip or enter:
             st.session_state.splash_done = True
