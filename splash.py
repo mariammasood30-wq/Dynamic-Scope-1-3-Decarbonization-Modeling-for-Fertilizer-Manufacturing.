@@ -1,23 +1,15 @@
 import base64
 import logging
 import mimetypes
-import time
 from pathlib import Path
 
 import streamlit as st
 
 
-_DISPLAY_SECONDS = 10
-_STATUS_MESSAGES = (
-    "Loading feedstock data...",
-    "Initializing Scope 1-3 engine...",
-    "Preparing MAC curve module...",
-)
 _ASSET_NAMES = (
-    "bg_plant.jpg",
+    "bg_plant_clean.jpg",
     "shot_mac.png",
     "shot_scope_diagram.png",
-    "shot_scope_table.png",
 )
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,12 +40,12 @@ def _load_splash_assets(
 
 
 def show_splash():
-    """Show an animated, one-time DecarbNH3 welcome screen."""
+    """Show a two-screen, one-time DecarbNH3 welcome flow."""
     if st.session_state.get("splash_done"):
         return
 
-    if "splash_started_at_v2" not in st.session_state:
-        st.session_state.splash_started_at_v2 = time.time()
+    if "splash_screen" not in st.session_state:
+        st.session_state.splash_screen = 1
 
     asset_directory = Path(__file__).parent / "assets"
     asset_manifest = tuple(
@@ -67,35 +59,23 @@ def show_splash():
         for name in _ASSET_NAMES
     )
     assets = _load_splash_assets(str(asset_directory), asset_manifest)
-    background_image = assets.get("bg_plant.jpg")
+    background_image = assets.get("bg_plant_clean.jpg")
     background_layer = (
-        f"linear-gradient(135deg, rgba(15, 92, 82, 0.78), "
-        f"rgba(7, 48, 53, 0.84)), url('{background_image}')"
+        f"linear-gradient(135deg, rgba(15, 92, 82, 0.48), "
+        f"rgba(7, 48, 53, 0.62)), url('{background_image}')"
         if background_image
         else "linear-gradient(135deg, #0f5c52 0%, #073035 100%)"
     )
 
-    screenshots = []
-    screenshot_specs = (
-        ("shot_mac.png", "MAC curve preview", "splash-shot splash-shot-mac"),
-        (
-            "shot_scope_diagram.png",
-            "Scope emissions diagram preview",
-            "splash-shot splash-shot-diagram",
-        ),
-        (
-            "shot_scope_table.png",
-            "Scope emissions table preview",
-            "splash-shot splash-shot-table",
-        ),
+    screenshot_markup = "\n".join(
+        f'<img class="splash-shot splash-shot-{position}" '
+        f'src="{assets[name]}" alt="{alt_text}">'
+        for position, name, alt_text in (
+            ("left", "shot_mac.png", "Marginal abatement cost chart preview"),
+            ("right", "shot_scope_diagram.png", "Scope emissions chart preview"),
+        )
+        if name in assets
     )
-    for name, alt_text, classes in screenshot_specs:
-        if name in assets:
-            screenshots.append(
-                f'<img class="{classes}" src="{assets[name]}" alt="{alt_text}">'
-            )
-    screenshot_markup = "\n".join(screenshots)
-    missing_assets = [name for name in _ASSET_NAMES if name not in assets]
 
     st.markdown(
         """
@@ -142,9 +122,15 @@ def show_splash():
     .splash-content {
         position: relative;
         z-index: 3;
-        width: min(760px, 84vw);
+        width: min(680px, 52vw);
         margin: 0 auto;
         text-align: center;
+    }
+    .splash-content-two {
+        width: min(760px, 88vw);
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+        padding: 0.5rem 1rem 1rem;
     }
     .splash-title {
         margin: 0;
@@ -160,112 +146,63 @@ def show_splash():
         font-weight: 600;
         letter-spacing: 0.015em;
     }
-    .splash-description {
-        max-width: 700px;
-        margin: 1.3rem auto 0;
-        color: #f2fbf9;
-        font-size: clamp(1rem, 1.4vw, 1.08rem);
-        line-height: 1.55;
-        text-wrap: balance;
-    }
-    .splash-chips, .splash-steps {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 0.65rem;
-    }
-    .splash-chips {
-        margin-top: 1.5rem;
-    }
-    .splash-chip {
-        padding: 0.48rem 0.9rem;
-        color: #e8faf6;
-        background: rgba(235, 255, 250, 0.12);
-        border: 1px solid rgba(210, 250, 241, 0.55);
-        border-radius: 999px;
-        font-size: 0.92rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        backdrop-filter: blur(8px);
-    }
-    .splash-steps {
-        margin-top: 1.65rem;
-        gap: 0.45rem;
-    }
-    .splash-step {
-        padding: 0.58rem 0.86rem;
-        color: #f7fffd;
-        background: rgba(3, 42, 43, 0.34);
-        border: 1px solid rgba(202, 241, 233, 0.3);
-        border-radius: 9px;
+    .splash-credit {
+        margin: 1rem 0 0;
+        color: rgba(239, 251, 248, 0.9);
         font-size: 0.9rem;
-        font-weight: 600;
-        white-space: nowrap;
     }
-    .splash-arrow {
-        color: #b2e8de;
-        font-size: 1.1rem;
+    .splash-section-title {
+        margin: 1.4rem 0 0.5rem;
+        color: #a9e3da;
+        font-size: 1.05rem;
         font-weight: 700;
     }
-    .splash-footer {
-        position: absolute;
-        right: 1rem;
-        bottom: 1rem;
-        left: 1rem;
-        z-index: 4;
-        color: rgba(239, 251, 248, 0.86);
-        font-size: 0.875rem;
-        text-align: center;
+    .splash-feature-list, .splash-steps-list {
+        max-width: 680px;
+        margin: 0.45rem auto 0;
+        padding-left: 1.5rem;
+        color: #f2fbf9;
+        font-size: clamp(0.94rem, 1.25vw, 1.05rem);
+        line-height: 1.5;
+        text-align: left;
+    }
+    .splash-feature-list li, .splash-steps-list li {
+        margin: 0.35rem 0;
     }
     .splash-shot {
         position: absolute;
         z-index: 2;
         display: block;
-        width: clamp(150px, 18vw, 260px);
+        width: clamp(150px, 17vw, 235px);
         height: auto;
         padding: 7px;
         background: #fff;
         border: 1px solid rgba(255, 255, 255, 0.92);
         border-radius: 12px;
         box-shadow: 0 18px 46px rgba(0, 20, 23, 0.34);
-        animation: splash-float 6s ease-in-out infinite;
     }
-    .splash-shot-mac {
-        top: 24%;
-        left: 5.5%;
-        transform: rotate(-4deg);
+    .splash-shot-left {
+        top: 50%;
+        left: 4.5%;
+        transform: translateY(-50%) rotate(-4deg);
     }
-    .splash-shot-diagram {
-        top: 51%;
-        left: 9%;
-        transform: rotate(3deg);
-        animation-delay: -2s;
-    }
-    .splash-shot-table {
-        top: 36%;
-        right: 6%;
-        transform: rotate(-3deg);
-        animation-delay: -1s;
+    .splash-shot-right {
+        top: 50%;
+        right: 4.5%;
+        transform: translateY(-50%) rotate(4deg);
     }
     .st-key-splash-controls {
         position: fixed;
-        bottom: 3.1rem;
+        bottom: 2rem;
         left: 50%;
         z-index: 5;
-        width: min(480px, 86vw);
-        padding: 0.6rem 0.8rem 0;
+        width: min(360px, 86vw);
+        padding: 0.4rem 0.8rem 0;
         transform: translateX(-50%);
         text-align: center;
     }
     .st-key-splash-controls [data-testid="stVerticalBlock"] {
         gap: 0.35rem;
-    }
-    .st-key-splash-controls [data-testid="stProgress"] {
-        padding: 0;
-    }
-    .st-key-splash-controls [data-testid="stProgress"] > div > div {
-        background: #43c4ad;
     }
     .st-key-splash-controls [data-testid="stButton"] button {
         min-height: 3.1rem;
@@ -283,118 +220,89 @@ def show_splash():
         color: #fff;
         transform: translateY(-1px);
     }
-    .st-key-splash-controls .st-key-skip-splash-button button {
-        min-height: 2.5rem;
-        border: 0;
-        background: transparent;
-        color: #e9f8f5;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-    }
-    .splash-status {
-        min-height: 1.25rem;
-        margin: 0;
-        color: rgba(242, 251, 249, 0.92);
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-align: center;
-    }
     @keyframes splash-fade-in {
         from { opacity: 0; }
         to { opacity: 1; }
     }
-    @keyframes splash-float {
-        0%, 100% { margin-top: 0; }
-        50% { margin-top: -12px; }
-    }
     @media (max-width: 899px) {
-        .splash-shot { display: none !important; }
+        .splash-shot {
+            top: 10%;
+            width: clamp(86px, 18vw, 135px);
+        }
         .splash-content { width: min(700px, 92vw); }
-        .st-key-splash-controls { bottom: 2.8rem; }
+        .splash-content-two { width: min(700px, 92vw); }
+        .st-key-splash-controls { bottom: 1.2rem; }
     }
     @media (max-width: 600px) {
         [data-testid="stMainBlockContainer"] { padding: 0.5rem !important; }
         .st-key-splash-screen { padding: 1rem; }
         .splash-content { width: 100%; }
         .splash-title { font-size: clamp(2.6rem, 13vw, 3.4rem); }
-        .splash-description { margin-top: 0.9rem; font-size: 1rem; }
-        .splash-chips { margin-top: 1rem; gap: 0.45rem; }
-        .splash-chip { padding: 0.42rem 0.68rem; font-size: 0.875rem; }
-        .splash-steps { margin-top: 1rem; gap: 0.4rem; }
-        .splash-step { padding: 0.45rem 0.58rem; font-size: 0.875rem; }
-        .splash-footer { bottom: 0.5rem; font-size: 0.875rem; }
-        .st-key-splash-controls { bottom: 2.3rem; width: 92vw; }
+        .splash-content-two { width: 100%; padding: 0.25rem 0.5rem 0.75rem; }
+        .splash-section-title { margin-top: 1rem; }
+        .splash-feature-list, .splash-steps-list { font-size: 0.92rem; }
+        .st-key-splash-controls { bottom: 0.6rem; width: 94vw; }
     }
     </style>
     """.replace("__BACKGROUND__", background_layer),
         unsafe_allow_html=True,
     )
 
-    @st.fragment(run_every="1s")
-    def render_splash():
-        elapsed = time.time() - st.session_state.splash_started_at_v2
-        if elapsed >= _DISPLAY_SECONDS:
-            st.session_state.splash_done = True
-            st.rerun(scope="app")
-
-        progress = min(elapsed / _DISPLAY_SECONDS, 1.0)
-        if missing_assets:
-            status = "Add the requested images to assets\\ to enable the full splash artwork."
-        else:
-            status = _STATUS_MESSAGES[
-                min(int(elapsed // (_DISPLAY_SECONDS / len(_STATUS_MESSAGES))), len(_STATUS_MESSAGES) - 1)
-            ]
-
-        with st.container(key="splash-screen", border=False):
+    screen = st.session_state.splash_screen
+    with st.container(key="splash-screen", border=False):
+        if screen == 1:
             st.markdown(
                 f"""
                 {screenshot_markup}
                 <main class="splash-content">
                     <h1 class="splash-title">DecarbNH3</h1>
                     <p class="splash-tagline">Ammonia &amp; Urea Decarbonization Modeller</p>
-                    <p class="splash-description">Model Scope 1-3 emissions and compare green hydrogen, heat recovery and solar PV for ammonia and urea plants.</p>
-                    <div class="splash-chips">
-                        <span class="splash-chip">Green H2</span>
-                        <span class="splash-chip">Heat recovery</span>
-                        <span class="splash-chip">Solar PV</span>
-                    </div>
-                    <div class="splash-steps">
-                        <span class="splash-step">1&nbsp; Enter capacity</span>
-                        <span class="splash-arrow" aria-hidden="true">→</span>
-                        <span class="splash-step">2&nbsp; Set levers</span>
-                        <span class="splash-arrow" aria-hidden="true">→</span>
-                        <span class="splash-step">3&nbsp; Run model</span>
-                        <span class="splash-arrow" aria-hidden="true">→</span>
-                        <span class="splash-step">4&nbsp; Explore tabs</span>
-                    </div>
+                    <p class="splash-credit">Created by Mariam Masood · Department of Chemical Engineering, UET Lahore</p>
                 </main>
-                <div class="splash-footer">v1.0 - Created by Mariam Masood, Dept. of Chemical Engineering, UET Lahore</div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                """
+                <main class="splash-content splash-content-two">
+                    <h1 class="splash-title">What this app does</h1>
+                    <ul class="splash-feature-list">
+                        <li>Models ammonia-plant emissions across Scopes 1, 2 and 3.</li>
+                        <li>Compares green hydrogen, waste-heat recovery and solar PV options.</li>
+                        <li>Estimates feedstock, electricity, water needs and abatement costs.</li>
+                    </ul>
+                    <h2 class="splash-section-title">How to use it</h2>
+                    <ol class="splash-steps-list">
+                        <li>Enter plant capacity and urea share in the input panel.</li>
+                        <li>Adjust the hydrogen, heat-recovery and solar controls.</li>
+                        <li>Explore the result tabs and export your results if needed.</li>
+                    </ol>
+                </main>
                 """,
                 unsafe_allow_html=True,
             )
 
-        with st.container(key="splash-controls", border=False):
-            st.markdown(f"<p class='splash-status'>{status}</p>", unsafe_allow_html=True)
-            st.progress(progress)
-            launch_col, skip_col = st.columns([3, 1], vertical_alignment="center")
-            with launch_col:
-                launch = st.button(
-                    "Launch DecarbNH3",
-                    key="launch_decarbnh3_button",
-                    type="primary",
-                    width="stretch",
-                )
-            with skip_col:
-                skip = st.button(
-                    "Skip",
-                    key="skip_splash_button",
-                    width="stretch",
-                )
-
-        if launch or skip:
-            st.session_state.splash_done = True
-            st.rerun(scope="app")
-
-    render_splash()
+    with st.container(key="splash-controls", border=False):
+        if screen == 1:
+            if st.button(
+                "Continue",
+                key="continue_splash_button",
+                type="primary",
+                width="stretch",
+            ):
+                st.session_state.splash_screen = 2
+                st.rerun()
+        else:
+            back_col, launch_col = st.columns(2, gap="small")
+            if back_col.button("Back", key="back_splash_button", width="stretch"):
+                st.session_state.splash_screen = 1
+                st.rerun()
+            if launch_col.button(
+                "Launch DecarbNH3",
+                key="launch_decarbnh3_button",
+                type="primary",
+                width="stretch",
+            ):
+                st.session_state.splash_done = True
+                st.rerun()
