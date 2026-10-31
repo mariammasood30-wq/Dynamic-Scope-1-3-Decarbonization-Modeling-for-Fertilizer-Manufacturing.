@@ -7,6 +7,7 @@ import streamlit as st
 
 
 _ASSET_NAMES = (
+    "bg_plant.jpg",
     "bg_plant_clean.jpg",
     "shot_mac.png",
     "shot_scope_diagram.png",
@@ -59,22 +60,23 @@ def show_splash():
         for name in _ASSET_NAMES
     )
     assets = _load_splash_assets(str(asset_directory), asset_manifest)
-    background_image = assets.get("bg_plant_clean.jpg")
+    background_image = assets.get("bg_plant.jpg") or assets.get("bg_plant_clean.jpg")
     background_layer = (
-        f"linear-gradient(135deg, rgba(15, 92, 82, 0.48), "
-        f"rgba(7, 48, 53, 0.62)), url('{background_image}')"
+        f"linear-gradient(135deg, rgba(12, 112, 103, 0.78), "
+        f"rgba(4, 62, 57, 0.48)), url('{background_image}')"
         if background_image
-        else "linear-gradient(135deg, #0f5c52 0%, #073035 100%)"
+        else "linear-gradient(135deg, #0e796c 0%, #06373a 100%)"
     )
 
-    screenshot_markup = "\n".join(
-        f'<img class="splash-shot splash-shot-{position}" '
-        f'src="{assets[name]}" alt="{alt_text}">'
-        for position, name, alt_text in (
-            ("left", "shot_mac.png", "Marginal abatement cost chart preview"),
-            ("right", "shot_scope_diagram.png", "Scope emissions chart preview"),
-        )
-        if name in assets
+    screenshot_markup_left = (
+        f'<img class="splash-shot splash-shot-left" src="{assets["shot_mac.png"]}" '
+        'alt="Marginal abatement cost chart preview">'
+        if "shot_mac.png" in assets else ""
+    )
+    screenshot_markup_right = (
+        f'<img class="splash-shot splash-shot-right" src="{assets["shot_scope_diagram.png"]}" '
+        'alt="Scope emissions chart preview">'
+        if "shot_scope_diagram.png" in assets else ""
     )
 
     st.markdown(
@@ -122,7 +124,7 @@ def show_splash():
     .splash-content {
         position: relative;
         z-index: 3;
-        width: min(680px, 52vw);
+        width: min(1200px, 92vw);
         margin: 0 auto;
         text-align: center;
     }
@@ -132,64 +134,119 @@ def show_splash():
         overflow-y: auto;
         padding: 0.5rem 1rem 1rem;
     }
+    .splash-hero-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(300px, 1.5fr) minmax(180px, 1fr);
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+    }
+    .splash-hero-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
     .splash-title {
         margin: 0;
-        color: #fff;
-        font: 800 clamp(3rem, 6vw, 4rem)/1.05 Inter, "Segoe UI", Arial, sans-serif;
-        letter-spacing: -0.035em;
-        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.16);
+        color: #f5fbfa;
+        font: 800 clamp(3.1rem, 5vw, 6.2rem)/0.95 Inter, "Segoe UI", Arial, sans-serif;
+        letter-spacing: -0.04em;
+        text-shadow: 0 3px 24px rgba(0, 0, 0, 0.18);
     }
     .splash-tagline {
-        margin: 0.7rem 0 0;
-        color: #a9e3da;
-        font-size: clamp(1.05rem, 2vw, 1.35rem);
-        font-weight: 600;
-        letter-spacing: 0.015em;
+        margin: 0;
+        color: #dffaf5;
+        font-size: clamp(1.05rem, 1.7vw, 1.7rem);
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
     }
     .splash-credit {
-        margin: 1rem 0 0;
-        color: rgba(239, 251, 248, 0.9);
-        font-size: 0.9rem;
+        margin: 0;
+        color: rgba(241, 252, 248, 0.94);
+        font-size: 0.96rem;
+        font-weight: 500;
+    }
+    .splash-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 6px;
+    }
+    .splash-badges span {
+        background: rgba(15, 89, 74, 0.45);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        color: #edfff8;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        padding: 6px 12px;
+        text-transform: uppercase;
+        backdrop-filter: blur(4px);
+    }
+    .splash-steps {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+        color: rgba(255,255,255,0.92);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .splash-steps span:nth-child(odd) {
+        background: rgba(28, 127, 109, 0.48);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 999px;
+        padding: 7px 12px;
     }
     .splash-section-title {
         margin: 1.4rem 0 0.5rem;
-        color: #a9e3da;
-        font-size: 1.05rem;
+        color: #dffaf5;
+        font-size: 1.2rem;
         font-weight: 700;
     }
     .splash-feature-list, .splash-steps-list {
         max-width: 680px;
         margin: 0.45rem auto 0;
         padding-left: 1.5rem;
-        color: #f2fbf9;
-        font-size: clamp(0.94rem, 1.25vw, 1.05rem);
-        line-height: 1.5;
+        color: #f4fbfa;
+        font-size: clamp(1rem, 1.4vw, 1.15rem);
+        line-height: 1.55;
         text-align: left;
     }
     .splash-feature-list li, .splash-steps-list li {
         margin: 0.35rem 0;
     }
-    .splash-shot {
-        position: absolute;
-        z-index: 2;
+    .splash-graph-card {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 22px;
+        box-shadow: 0 22px 50px rgba(0,0,0,0.2);
+        backdrop-filter: blur(6px);
+        overflow: hidden;
+        padding: 12px;
+    }
+    .splash-graph-card img {
         display: block;
-        width: clamp(150px, 17vw, 235px);
+        width: 100%;
         height: auto;
-        padding: 7px;
-        background: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.92);
-        border-radius: 12px;
-        box-shadow: 0 18px 46px rgba(0, 20, 23, 0.34);
+        border-radius: 14px;
     }
-    .splash-shot-left {
-        top: 50%;
-        left: 4.5%;
-        transform: translateY(-50%) rotate(-4deg);
-    }
-    .splash-shot-right {
-        top: 50%;
-        right: 4.5%;
-        transform: translateY(-50%) rotate(4deg);
+    .splash-shot {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(255,255,255,0.9);
+        border-radius: 14px;
+        box-shadow: 0 18px 42px rgba(0, 20, 23, 0.32);
     }
     .st-key-splash-controls {
         position: fixed;
@@ -205,18 +262,19 @@ def show_splash():
         gap: 0.35rem;
     }
     .st-key-splash-controls [data-testid="stButton"] button {
-        min-height: 3.1rem;
-        border: 1px solid #6be0ca;
+        min-height: 3.2rem;
+        border: 1px solid rgba(138, 235, 215, 0.95);
         border-radius: 12px;
-        background: #1b7a6b;
+        background: linear-gradient(180deg, #1d8a78 0%, #136f62 100%);
         color: #fff;
-        font-size: 1rem;
-        font-weight: 750;
+        font-size: 1.08rem;
+        font-weight: 800;
+        box-shadow: 0 8px 18px rgba(8, 61, 56, 0.22);
         transition: background 160ms ease, transform 160ms ease;
     }
     .st-key-splash-controls [data-testid="stButton"] button:hover {
-        border-color: #9af0df;
-        background: #21927f;
+        border-color: rgba(190, 255, 244, 1);
+        background: linear-gradient(180deg, #1f9b84 0%, #147a66 100%);
         color: #fff;
         transform: translateY(-1px);
     }
@@ -225,9 +283,8 @@ def show_splash():
         to { opacity: 1; }
     }
     @media (max-width: 899px) {
-        .splash-shot {
-            top: 10%;
-            width: clamp(86px, 18vw, 135px);
+        .splash-hero-row {
+            grid-template-columns: 1fr;
         }
         .splash-content { width: min(700px, 92vw); }
         .splash-content-two { width: min(700px, 92vw); }
@@ -253,11 +310,30 @@ def show_splash():
         if screen == 1:
             st.markdown(
                 f"""
-                {screenshot_markup}
                 <main class="splash-content">
-                    <h1 class="splash-title">DecarbNH3</h1>
-                    <p class="splash-tagline">Ammonia &amp; Urea Decarbonization Modeller</p>
-                    <p class="splash-credit">Created by Mariam Masood · Department of Chemical Engineering, UET Lahore</p>
+                    <div class="splash-hero-row">
+                        <div class="splash-graph-card splash-graph-card-left">{screenshot_markup_left}</div>
+                        <div class="splash-hero-copy">
+                            <h1 class="splash-title">DecarbNH3</h1>
+                            <p class="splash-tagline">Ammonia &amp; Urea Decarbonization Modeller</p>
+                            <p class="splash-credit">Created by Mariam Masood · Department of Chemical Engineering, UET Lahore</p>
+                            <div class="splash-badges">
+                                <span>H₂ Green H₂</span>
+                                <span>Heat recovery</span>
+                                <span>Solar PV</span>
+                            </div>
+                        </div>
+                        <div class="splash-graph-card splash-graph-card-right">{screenshot_markup_right}</div>
+                    </div>
+                    <div class="splash-steps">
+                        <span>Enter capacity</span>
+                        <span>→</span>
+                        <span>Set levers</span>
+                        <span>→</span>
+                        <span>Run model</span>
+                        <span>→</span>
+                        <span>Explore results</span>
+                    </div>
                 </main>
                 """,
                 unsafe_allow_html=True,
