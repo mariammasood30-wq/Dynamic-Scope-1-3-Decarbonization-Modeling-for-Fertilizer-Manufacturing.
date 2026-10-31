@@ -32,21 +32,23 @@ st.markdown(
     <style>
     html, body, [class*="st-"], [data-testid="stAppViewContainer"] {{
         font-family: "Segoe UI", Arial, sans-serif !important;
+        font-size: 12px;
     }}
-    .stApp {{ background: #f2f6f5; }}
+    html, body {{ overflow: hidden; height: 100%; }}
+    .stApp {{ background: #f2f6f5; height: 100vh; }}
     [data-testid="stHeader"], [data-testid="stToolbar"], footer,
     [data-testid="stDecoration"], [data-testid="stStatusWidget"] {{
         display: none !important;
     }}
     [data-testid="stMainBlockContainer"] {{
-        max-width: none; padding: 0 9px 10px;
+        max-width: none; padding: 0 9px 10px; height: calc(100vh - 18px);
     }}
     section[data-testid="stMain"] {{
-        flex: 0 1 951px; width: 951px; max-width: 951px;
+        flex: 0 1 951px; width: 951px; max-width: 951px; height: 100%;
     }}
     [data-testid="stSidebar"] {{
-        background: #f2f6f5; min-width: 310px; max-width: 310px;
-        border: 0;
+        background: #f2f6f5; min-width: 290px; max-width: 290px;
+        border: 0; height: calc(100vh - 12px);
     }}
     [data-testid="stSidebar"] > div:first-child {{
         padding: 12px 8px 8px;
@@ -61,10 +63,10 @@ st.markdown(
         border: 1px solid #dce7e4; border-radius: 12px;
     }}
     [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] {{
-        gap: .22rem;
+        gap: .18rem;
     }}
     [data-testid="stSidebar"] h2 {{
-        color: {DARK}; font: 700 15px "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 700 16px "Segoe UI", Arial, sans-serif;
         margin: 0 0 4px;
     }}
     [data-testid="stSidebar"] label p {{
@@ -107,9 +109,12 @@ st.markdown(
         margin-top: -3px; padding: 10px; height: calc(100vh - 26px);
         min-height: 0; overflow: hidden;
     }}
+    [data-testid="stTabs"] > div:last-child {{
+        flex: 1 1 auto; min-height: 0;
+    }}
     [data-testid="stTabs"] [role="tablist"] {{
         flex: 0 0 auto; gap: 2px; justify-content: center; border-bottom: 0;
-        padding: 0 0 8px; min-height: 38px;
+        padding: 0 0 8px; min-height: 36px;
     }}
     [data-testid="stTab"] {{
         box-sizing: border-box; height: 30px; padding: 0 9px;
@@ -139,11 +144,14 @@ st.markdown(
     }}
     [data-testid="stTabPanel"] {{
         box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
-        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px;
+        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 130px);
+    }}
+    [data-testid="stTabPanel"] [data-testid="stVerticalBlock"] {{
+        gap: .35rem;
     }}
     [data-testid="stTabPanel"] h3 {{
-        color: {DARK}; font: 700 16px "Segoe UI", Arial, sans-serif;
-        margin: 0 0 .55rem;
+        color: {DARK}; font: 700 16px/1.2 "Segoe UI", Arial, sans-serif;
+        margin: 0 0 .35rem;
     }}
     [data-testid="stTabPanel"] h4 {{
         color: {DARK}; font: 700 14px "Segoe UI", Arial, sans-serif;
@@ -175,7 +183,7 @@ st.markdown(
         padding-top: 4px;
     }}
     [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 11px/1.4 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 10px/1.3 "Segoe UI", Arial, sans-serif;
     }}
     .mac-card {{
         box-sizing: border-box; min-height: 100px; margin: 0 0 14px;
@@ -190,8 +198,13 @@ st.markdown(
         font: 700 22px/1.2 "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stDataFrame"], [data-testid="stTable"] {{
-        font: 400 12px "Segoe UI", Arial, sans-serif;
+        font: 400 12px/1.2 "Segoe UI", Arial, sans-serif;
         border: 0; border-radius: 4px; overflow: hidden;
+    }}
+    [data-testid="stTable"] th,
+    [data-testid="stTable"] td {{
+        padding: 2px 6px !important;
+        line-height: 1.2 !important;
     }}
     div[data-testid="stAlert"] {{
         border: 0; background: {PALE}; color: {DARK}; border-radius: 9px;
@@ -206,7 +219,7 @@ st.markdown(
         }}
     }}
     @media (max-width: 900px) {{
-        [data-testid="stSidebar"] {{ min-width: 260px; max-width: 260px; }}
+        [data-testid="stSidebar"] {{ min-width: 250px; max-width: 250px; }}
         [data-testid="stMainBlockContainer"] {{ padding: 0 8px 8px; }}
         [data-testid="stSidebar"] > div:first-child {{ padding-top: 12px; }}
         [data-testid="stSidebarUserContent"] {{
