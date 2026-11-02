@@ -32,7 +32,7 @@ st.markdown(
     <style>
     html, body, [class*="st-"], [data-testid="stAppViewContainer"] {{
         font-family: "Segoe UI", Arial, sans-serif !important;
-        font-size: 12px;
+        font-size: 14px;
     }}
     html, body {{ overflow: hidden; height: 100%; }}
     .stApp {{ background: #f2f6f5; height: 100vh; }}
@@ -66,20 +66,20 @@ st.markdown(
         gap: .18rem;
     }}
     [data-testid="stSidebar"] h2 {{
-        color: {DARK}; font: 700 16px "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 700 18px "Segoe UI", Arial, sans-serif;
         margin: 0 0 4px;
     }}
     [data-testid="stSidebar"] label p {{
-        color: {DARK}; font: 700 11px "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 600 13px/1.4 "Segoe UI", Arial, sans-serif;
         margin-bottom: .05rem;
     }}
     [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 9px/1.3 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 11px/1.4 "Segoe UI", Arial, sans-serif;
         margin-bottom: 0; padding-bottom: 5px;
     }}
     [data-testid="stSidebar"] input {{
         height: 31px; min-height: 31px;
-        font: 400 11px "Segoe UI", Arial, sans-serif;
+        font: 400 14px "Segoe UI", Arial, sans-serif;
         border: 1px solid #dce7e4; border-radius: 5px;
     }}
     [data-testid="stNumberInput"] button {{
@@ -100,13 +100,13 @@ st.markdown(
     }}
     [data-testid="stSidebar"] button {{
         min-height: 31px; padding-top: .2rem; padding-bottom: .2rem;
-        font: 700 11px "Segoe UI", Arial, sans-serif;
+        font: 600 13px "Segoe UI", Arial, sans-serif;
         border-radius: 7px;
     }}
     [data-testid="stTabs"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 14px;
         box-sizing: border-box; display: flex; flex-direction: column;
-        margin-top: -3px; padding: 10px; height: calc(100vh - 26px);
+        margin-top: 6px; padding: 10px; height: calc(100vh - 246px);
         min-height: 0; overflow: hidden;
     }}
     [data-testid="stTabs"] > div:last-child {{
@@ -117,9 +117,9 @@ st.markdown(
         padding: 0 0 8px; min-height: 36px;
     }}
     [data-testid="stTab"] {{
-        box-sizing: border-box; height: 30px; padding: 0 9px;
+        box-sizing: border-box; height: 32px; padding: 0 9px;
         color: {DARK}; background: white; border: 0; border-radius: 7px;
-        font: 700 13px "Segoe UI", Arial, sans-serif;
+        font: 700 14px "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stTab"]:hover:not([aria-selected="true"]) {{
         color: {DARK} !important; background: {PALE} !important;
@@ -139,22 +139,22 @@ st.markdown(
         display: none !important;
     }}
     [data-testid="stTab"] p {{
-        font: 700 13px "Segoe UI", Arial, sans-serif;
+        font: 700 14px "Segoe UI", Arial, sans-serif;
         margin: 0;
     }}
     [data-testid="stTabPanel"] {{
         box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
-        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 130px);
+        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 350px);
     }}
     [data-testid="stTabPanel"] [data-testid="stVerticalBlock"] {{
         gap: .35rem;
     }}
     [data-testid="stTabPanel"] h3 {{
-        color: {DARK}; font: 700 16px/1.2 "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 700 18px/1.25 "Segoe UI", Arial, sans-serif;
         margin: 0 0 .35rem;
     }}
     [data-testid="stTabPanel"] h4 {{
-        color: {DARK}; font: 700 14px "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 700 16px "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stTabPanel"] p {{
         font-family: "Segoe UI", Arial, sans-serif;
@@ -162,28 +162,28 @@ st.markdown(
     .basis-section {{
         box-sizing: border-box; margin: 8px 0 4px; padding: 7px 8px;
         color: white; background: {GREEN}; border-radius: 6px;
-        font: 700 12px "Segoe UI", Arial, sans-serif;
+        font: 700 13px "Segoe UI", Arial, sans-serif;
     }}
     .basis-label, .basis-unit {{
-        color: {DARK}; font: 400 11px "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 400 12px "Segoe UI", Arial, sans-serif;
     }}
     .basis-note {{
-        color: {GREY}; font: 400 10px/1.3 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 11px/1.4 "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stForm"] [data-testid="stNumberInput"] input {{
         box-sizing: border-box; width: 100%; text-align: right !important;
-        font: 700 11px "Segoe UI", Arial, sans-serif;
+        font: 600 12px "Segoe UI", Arial, sans-serif;
         background: #fbfcfc; border: 1px solid #dce7e4; border-radius: 5px;
     }}
     [data-testid="stForm"] [data-testid="stNumberInput"] button {{
         display: none !important;
     }}
     .app-credit {{
-        color: {GREY}; text-align: center; font: 400 8px "Segoe UI", Arial, sans-serif;
+        color: {GREY}; text-align: center; font: 400 10px "Segoe UI", Arial, sans-serif;
         padding-top: 4px;
     }}
     [data-testid="stCaptionContainer"] p {{
-        color: {GREY}; font: 400 10px/1.3 "Segoe UI", Arial, sans-serif;
+        color: {GREY}; font: 400 12px/1.45 "Segoe UI", Arial, sans-serif;
     }}
     .mac-card {{
         box-sizing: border-box; min-height: 100px; margin: 0 0 14px;
@@ -191,24 +191,37 @@ st.markdown(
         border: 1px solid #dce7e4; border-radius: 12px;
     }}
     .mac-card-title {{
-        color: {DARK}; font: 700 12px/1.35 "Segoe UI", Arial, sans-serif;
+        color: {DARK}; font: 600 13px/1.4 "Segoe UI", Arial, sans-serif;
     }}
     .mac-card-value {{
         margin-top: 7px; color: {GREEN};
         font: 700 22px/1.2 "Segoe UI", Arial, sans-serif;
     }}
     [data-testid="stDataFrame"], [data-testid="stTable"] {{
-        font: 400 12px/1.2 "Segoe UI", Arial, sans-serif;
+        font: 400 14px/1.35 "Segoe UI", Arial, sans-serif;
         border: 0; border-radius: 4px; overflow: hidden;
+    }}
+    [data-testid="stTable"] th {{
+        font: 600 14px/1.35 "Segoe UI", Arial, sans-serif !important;
     }}
     [data-testid="stTable"] th,
     [data-testid="stTable"] td {{
-        padding: 2px 6px !important;
-        line-height: 1.2 !important;
+        padding: 3px 7px !important;
+        line-height: 1.35 !important;
     }}
     div[data-testid="stAlert"] {{
-        border: 0; background: {PALE}; color: {DARK}; border-radius: 9px;
-        font: 700 11px "Segoe UI", Arial, sans-serif;
+        border: 0; border-left: 4px solid {GREEN}; background: {PALE};
+        color: {DARK}; border-radius: 9px;
+        font: 400 14px/1.45 "Segoe UI", Arial, sans-serif;
+        margin: 0 0 8px; padding: 8px 12px;
+    }}
+    div[data-testid="stAlert"] [data-testid="stAlertContainer"] {{
+        background: transparent;
+    }}
+    div[data-testid="stAlert"] p {{
+        color: {DARK};
+        font: 400 14px/1.45 "Segoe UI", Arial, sans-serif;
+        margin: 0;
     }}
     [data-testid="stMetric"] label, [data-testid="stMetricValue"] {{
         font-family: "Segoe UI", Arial, sans-serif !important;
@@ -225,7 +238,7 @@ st.markdown(
         [data-testid="stSidebarUserContent"] {{
             top: 0; left: 0; width: 100%; min-height: calc(100vh - 24px);
         }}
-        [data-testid="stTab"] {{ padding: 0 5px; font-size: 11px; }}
+        [data-testid="stTab"] {{ padding: 0 5px; font-size: 13px; }}
     }}
     </style>
     """,
@@ -485,6 +498,13 @@ h2_mwh, h2_kwh_day = plant.h2_electricity(h2)
 electrolyzer_kw = plant.electrolyzer_size_kw(h2)
 electrolyzer_cost = plant.electrolyzer_cost(h2)
 solar_data = plant.solar_sizing(h2, solar)
+
+recommendation = plant.recommend(h2, solar, heat)
+st.info(
+    recommendation.replace("\n", "  \n"),
+    title="Model recommendation",
+    icon="💡",
+)
 
 if st.session_state.active_sidebar_panel == "results":
     st.subheader("Results export")
@@ -970,5 +990,3 @@ with tab_basis:
         edited_basis["urea_share"] = DEFAULTS["urea_share"]
         st.session_state.basis_values = edited_basis
         st.rerun()
-
-st.info(plant.recommend(h2, solar, heat))
