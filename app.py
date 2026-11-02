@@ -144,7 +144,7 @@ st.markdown(
     }}
     [data-testid="stTabPanel"] {{
         box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
-        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 241px);
+        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: none;
     }}
     [data-testid="stTabPanel"] [data-testid="stVerticalBlock"] {{
         gap: .35rem;
@@ -518,7 +518,6 @@ recommendation = plant.recommend(h2, solar, heat)
 @st.dialog(
     "Model recommendation",
     width="large",
-    icon=":material/lightbulb:",
 )
 def show_recommendation():
     st.markdown(recommendation.replace("\n", "  \n"))
