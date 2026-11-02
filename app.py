@@ -106,7 +106,7 @@ st.markdown(
     [data-testid="stTabs"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 14px;
         box-sizing: border-box; display: flex; flex-direction: column;
-        margin-top: 6px; padding: 10px; height: calc(100vh - 246px);
+        margin-top: 6px; padding: 10px; height: calc(100vh - 137px);
         min-height: 0; overflow: hidden;
     }}
     [data-testid="stTabs"] > div:last-child {{
@@ -144,7 +144,7 @@ st.markdown(
     }}
     [data-testid="stTabPanel"] {{
         box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
-        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 350px);
+        background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: calc(100vh - 241px);
     }}
     [data-testid="stTabPanel"] [data-testid="stVerticalBlock"] {{
         gap: .35rem;
