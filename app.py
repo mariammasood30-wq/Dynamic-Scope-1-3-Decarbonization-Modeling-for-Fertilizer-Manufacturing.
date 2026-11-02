@@ -500,11 +500,6 @@ electrolyzer_cost = plant.electrolyzer_cost(h2)
 solar_data = plant.solar_sizing(h2, solar)
 
 recommendation = plant.recommend(h2, solar, heat)
-st.info(
-    recommendation.replace("\n", "  \n"),
-    title="Model recommendation",
-    icon="💡",
-)
 
 if st.session_state.active_sidebar_panel == "results":
     st.subheader("Results export")
@@ -990,3 +985,9 @@ with tab_basis:
         edited_basis["urea_share"] = DEFAULTS["urea_share"]
         st.session_state.basis_values = edited_basis
         st.rerun()
+
+st.info(
+    recommendation.replace("\n", "  \n"),
+    title="Model recommendation",
+    icon="💡",
+)
