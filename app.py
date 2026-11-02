@@ -501,6 +501,15 @@ solar_data = plant.solar_sizing(h2, solar)
 
 recommendation = plant.recommend(h2, solar, heat)
 
+
+@st.dialog(
+    "Model recommendation",
+    width="large",
+    icon=":material/lightbulb:",
+)
+def show_recommendation():
+    st.markdown(recommendation.replace("\n", "  \n"))
+
 if st.session_state.active_sidebar_panel == "results":
     st.subheader("Results export")
     pdf_data, jpg_data = build_results_exports(plant, h2, solar, heat)
@@ -986,8 +995,9 @@ with tab_basis:
         st.session_state.basis_values = edited_basis
         st.rerun()
 
-st.info(
-    recommendation.replace("\n", "  \n"),
-    title="Model recommendation",
-    icon="💡",
-)
+if st.button(
+    "Show recommendation",
+    icon=":material/lightbulb:",
+    key="show_recommendation_button",
+):
+    show_recommendation()
