@@ -226,6 +226,14 @@ st.markdown(
     [data-testid="stMetric"] label, [data-testid="stMetricValue"] {{
         font-family: "Segoe UI", Arial, sans-serif !important;
     }}
+    .st-key-show_recommendation_button button {{
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 40px;
+        justify-content: center;
+        white-space: normal;
+        font: 600 14px/1.35 "Segoe UI", Arial, sans-serif;
+    }}
     @media (max-width: 1280px) {{
         section[data-testid="stMain"] {{
             flex: 1 1 auto; width: auto; max-width: none;
@@ -512,7 +520,9 @@ def show_recommendation():
 
 if st.session_state.active_sidebar_panel == "results":
     st.subheader("Results export")
-    pdf_data, jpg_data = build_results_exports(plant, h2, solar, heat)
+    pdf_data, jpg_data = build_results_exports(
+        plant, h2, solar, heat, recommendation=recommendation
+    )
     pdf_col, jpg_col = st.columns(2, gap="small")
     pdf_col.download_button(
         "Download PDF",
@@ -997,7 +1007,7 @@ with tab_basis:
 
 if st.button(
     "Show recommendation",
-    icon=":material/lightbulb:",
     key="show_recommendation_button",
+    width="stretch",
 ):
     show_recommendation()

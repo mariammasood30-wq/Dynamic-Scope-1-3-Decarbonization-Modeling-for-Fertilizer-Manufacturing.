@@ -11,8 +11,11 @@ LIGHT = "#d9eee9"
 GREY = "#40534f"
 
 
-def build_results_exports(plant, h2, solar, heat_recovery):
+def build_results_exports(plant, h2, solar, heat_recovery, recommendation=None):
     """Return a one-page PDF and matching JPEG for the selected scenario."""
+    if recommendation is None:
+        recommendation = plant.recommend(h2, solar, heat_recovery)
+
     rows = plant.table(h2, solar, heat_recovery)
     levers = plant.levers(h2, solar, heat_recovery)
     streams = plant.streams(h2, solar, heat_recovery)
@@ -123,11 +126,40 @@ def build_results_exports(plant, h2, solar, heat_recovery):
     )
     figure.text(
         0.04,
-        0.105,
+        0.015,
         "The stoichiometric reference row is not included in totals. Model factors and "
         "assumptions are editable in Basis & equations.",
-        fontsize=8,
+        fontsize=7.5,
         color=GREY,
+    )
+
+    recommendation_axis = figure.add_axes([0.04, 0.045, 0.92, 0.13])
+    recommendation_axis.set_facecolor(PALE)
+    recommendation_axis.set_xticks([])
+    recommendation_axis.set_yticks([])
+    recommendation_axis.tick_params(
+        left=False, bottom=False, labelleft=False, labelbottom=False
+    )
+    for spine in recommendation_axis.spines.values():
+        spine.set_color(LIGHT)
+    recommendation_axis.text(
+        0.015,
+        0.78,
+        "Recommendations",
+        fontsize=9,
+        fontweight="bold",
+        color=DARK,
+        transform=recommendation_axis.transAxes,
+    )
+    recommendation_axis.text(
+        0.015,
+        0.52,
+        recommendation.replace("\n", " "),
+        fontsize=8,
+        color=DARK,
+        wrap=True,
+        va="top",
+        transform=recommendation_axis.transAxes,
     )
 
     pdf_buffer = BytesIO()
