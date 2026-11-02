@@ -473,6 +473,11 @@ solar_kwh_day = st.sidebar.slider(
 run_col, reset_col = st.sidebar.columns(2, gap="small")
 run_col.button("Run model", type="primary", use_container_width=True)
 reset_col.button("Reset", on_click=reset_model, use_container_width=True)
+recommendation_requested = st.sidebar.button(
+    "Show recommendation",
+    key="show_recommendation_button",
+    width="stretch",
+)
 if st.sidebar.button("Results", key="results_button", width="stretch"):
     st.session_state.active_sidebar_panel = "results"
 if st.sidebar.button("Methodology", key="methodology_button", width="stretch"):
@@ -517,6 +522,10 @@ recommendation = plant.recommend(h2, solar, heat)
 )
 def show_recommendation():
     st.markdown(recommendation.replace("\n", "  \n"))
+
+
+if recommendation_requested:
+    show_recommendation()
 
 if st.session_state.active_sidebar_panel == "results":
     st.subheader("Results export")
@@ -1004,10 +1013,3 @@ with tab_basis:
         edited_basis["urea_share"] = DEFAULTS["urea_share"]
         st.session_state.basis_values = edited_basis
         st.rerun()
-
-if st.button(
-    "Show recommendation",
-    key="show_recommendation_button",
-    width="stretch",
-):
-    show_recommendation()
