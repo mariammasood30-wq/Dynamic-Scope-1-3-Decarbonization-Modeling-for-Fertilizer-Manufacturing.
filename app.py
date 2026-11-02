@@ -106,7 +106,7 @@ st.markdown(
     [data-testid="stTabs"] {{
         background: white; border: 1px solid #dce7e4; border-radius: 14px;
         box-sizing: border-box; display: flex; flex-direction: column;
-        margin-top: 6px; padding: 10px; height: calc(100vh - 137px);
+        margin-top: 6px; padding: 10px; height: calc(100vh - 30px);
         min-height: 0; overflow: hidden;
     }}
     [data-testid="stTabs"] > div:last-child {{
@@ -173,7 +173,11 @@ st.markdown(
     [data-testid="stForm"] [data-testid="stNumberInput"] input {{
         box-sizing: border-box; width: 100%; text-align: right !important;
         font: 600 12px "Segoe UI", Arial, sans-serif;
-        background: #fbfcfc; border: 1px solid #dce7e4; border-radius: 5px;
+        background: #fff; border: 1px solid #c5d4d0; border-radius: 6px;
+        min-height: 32px;
+    }}
+    [data-testid="stForm"] [data-testid="stNumberInput"] input:focus {{
+        border-color: {GREEN}; box-shadow: 0 0 0 2px #d9eee9;
     }}
     [data-testid="stForm"] [data-testid="stNumberInput"] button {{
         display: none !important;
@@ -525,38 +529,6 @@ def show_recommendation():
 
 if recommendation_requested:
     show_recommendation()
-
-if st.session_state.active_sidebar_panel == "results":
-    st.subheader("Results export")
-    pdf_data, jpg_data = build_results_exports(
-        plant, h2, solar, heat, recommendation=recommendation
-    )
-    pdf_col, jpg_col = st.columns(2, gap="small")
-    pdf_col.download_button(
-        "Download PDF",
-        data=pdf_data,
-        file_name="FORGE_results.pdf",
-        mime="application/pdf",
-        width="stretch",
-    )
-    jpg_col.download_button(
-        "Download JPG",
-        data=jpg_data,
-        file_name="FORGE_results.jpg",
-        mime="image/jpeg",
-        width="stretch",
-    )
-    st.image(jpg_data, caption="Current model results", width="stretch")
-elif st.session_state.active_sidebar_panel == "methodology":
-    st.subheader("How the calculations are made")
-    for section_title, items in methodology_sections():
-        st.markdown(
-            f"<div class='basis-section'>{section_title}</div>",
-            unsafe_allow_html=True,
-        )
-        for formula_title, explanation in items:
-            st.markdown(f"**{formula_title}**  \n{explanation}")
-    st.divider()
 
 tab_feed, tab_table, tab_scope, tab_mac, tab_upgrade, tab_basis = st.tabs(
     [
@@ -1012,3 +984,35 @@ with tab_basis:
         edited_basis["urea_share"] = DEFAULTS["urea_share"]
         st.session_state.basis_values = edited_basis
         st.rerun()
+
+if st.session_state.active_sidebar_panel == "results":
+    st.subheader("Results export")
+    pdf_data, jpg_data = build_results_exports(
+        plant, h2, solar, heat, recommendation=recommendation
+    )
+    pdf_col, jpg_col = st.columns(2, gap="small")
+    pdf_col.download_button(
+        "Download PDF",
+        data=pdf_data,
+        file_name="FORGE_results.pdf",
+        mime="application/pdf",
+        width="stretch",
+    )
+    jpg_col.download_button(
+        "Download JPG",
+        data=jpg_data,
+        file_name="FORGE_results.jpg",
+        mime="image/jpeg",
+        width="stretch",
+    )
+    st.image(jpg_data, caption="Current model results", width="stretch")
+elif st.session_state.active_sidebar_panel == "methodology":
+    st.subheader("How the calculations are made")
+    for section_title, items in methodology_sections():
+        st.markdown(
+            f"<div class='basis-section'>{section_title}</div>",
+            unsafe_allow_html=True,
+        )
+        for formula_title, explanation in items:
+            st.markdown(f"**{formula_title}**  \n{explanation}")
+    st.divider()
