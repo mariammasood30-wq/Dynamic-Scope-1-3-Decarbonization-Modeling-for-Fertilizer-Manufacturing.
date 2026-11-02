@@ -142,6 +142,9 @@ st.markdown(
         font: 700 14px "Segoe UI", Arial, sans-serif;
         margin: 0;
     }}
+    [data-testid="stTabs"] [role="tablist"] {{
+        position: relative; z-index: 4; background: white;
+    }}
     [data-testid="stTabPanel"] {{
         box-sizing: border-box; flex: 1 1 auto; min-height: 0; overflow-y: auto;
         background: #fff; border: 0; border-radius: 8px; padding: 8px 6px; max-height: none;
@@ -160,7 +163,7 @@ st.markdown(
         font-family: "Segoe UI", Arial, sans-serif;
     }}
     .basis-section {{
-        box-sizing: border-box; margin: 8px 0 4px; padding: 7px 8px;
+        box-sizing: border-box; margin: 8px 0 12px; padding: 7px 8px;
         color: white; background: {GREEN}; border-radius: 6px;
         font: 700 13px "Segoe UI", Arial, sans-serif;
     }}
